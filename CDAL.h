@@ -35,6 +35,8 @@ class CDAL : public ADT<element>
         void allocate_new();
         //Will deallocate memory when more than half of the arrays are unused
         void deallocate_old();
+        //Determines if two elements are equal
+        bool equals(element a, element b);
 
     private:
 
@@ -417,7 +419,7 @@ bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (
     while (temp) {
         //If the last node
         if (!(temp->next)) {
-            for (int i = 0; i < length(); ++i)
+            for (int i = 0; i < tail - 1; ++i)
                 if (equals_function(object, temp->list[i])) return true;
         }
         else {
@@ -428,6 +430,12 @@ bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (
     }
     return false;
 }
+template <class element>
+//Returns whether two elements are equal
+bool cop3530::CDAL<element>::equals(element a, element b) {
+    return (a == b ? true : false);
+}
+
 template <class element>
 //Prints out the contents of the list to the ostream
 std::ostream& cop3530::CDAL<element>::print (std::ostream& out) {

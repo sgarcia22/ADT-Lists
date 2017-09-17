@@ -186,7 +186,13 @@ cout << endl;
     cop3530::CDAL<int> * list = new cop3530::CDAL<int>();
     for (int i = 1; i<= 100; ++i)
         list->push_back(i);
-    list->insert(30, 51);
+
+       // list.functor;
+       // bool yes = functor(5, 5);
+
+ // int * p = &list->equals;
+  list->contains(4, (list->*equals()));
+  /*  list->insert(30, 51);
     list->insert(79, 1);
   //  list->shitPrint();
   //  cout << list->item_at(51) << endl;
