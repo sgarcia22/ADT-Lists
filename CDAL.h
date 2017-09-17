@@ -28,11 +28,14 @@ class CDAL : public ADT<element>
         size_t length () override;
         void clear () override;
         void shitPrint(); ///ERASE
-        bool contains (element object, const std::type_info& type) override;
+        bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         //Will allocate a new array if full
         void allocate_new();
+        //Will deallocate memory when more than half of the arrays are unused
+        void deallocate_old();
+
     private:
 
         struct Node {
@@ -43,6 +46,8 @@ class CDAL : public ADT<element>
         int tail;
         Node * data;
         const int array_size = 50;
+        //Keeps track of the number of unused arrays
+        int unused_arrays = 0;
 
 };
 }
@@ -62,25 +67,53 @@ cop3530::CDAL<element>::~CDAL() {
     Node * temp = data;
     while (temp) {
         delete [] data->list;
-        delete data;
         data = temp->next;
+        temp = temp->next;
     }
     delete temp;
+    delete data;
 }
 template <class element>
 //Inserts element at a certain position
 void cop3530::CDAL<element>::insert(element object, int position) {
+  //If the list is full allocate a new Node with an array that fits 50 items
+    if (position > length())
+         throw std::runtime_error ("Not a valid position.\n ");
+
+    //This will be the new array with the added elements
+    element * values = new element[length() + 1];
+    //Get old array
+    element * curr = contents();
+    //Copy values from current into new array and insert the new value
+    for (int i = 0; i < length() + 1; ++i) {
+        if (i < position - 1)
+            values[i] = curr[i];
+        else if (i == position - 1)
+            values[i] = object;
+        else
+            values[i] = curr[i - 1];
+    }
+
+    size_t size = length() + 1;
+    //Push back all of the new elements into the new list
+    clear();
+    for (int i = 0; i < size; ++i) {
+       push_back(values[i]);
+    }
+
 }
 template <class element>
 //Inserts element at the back of the list
 void cop3530::CDAL<element>::push_back (element object) {
     //If the list is full allocate a new Node with an array that fits 50 items
-    if (is_full()) {
+    if (is_full())
         allocate_new();
-    }
     //Move tail pointer to correct new index
-    if (tail == 49)
+    if (tail == 49) {
         tail = 0;
+        if (unused_arrays > 0)
+            --unused_arrays;
+    }
     else
         ++tail;
 
@@ -105,8 +138,11 @@ void cop3530::CDAL<element>::push_front (element object) {
     element temp;
     //Will keep track of the last index in the current array
     element last_temp;
-    if (tail == 49)
+    if (tail == 49) {
         tail = 0;
+        if (unused_arrays > 0)
+            --unused_arrays;
+    }
     else
         ++tail;
     while (curr) {
@@ -182,38 +218,32 @@ void cop3530::CDAL<element>::remove (int position) {
         pop_front();
         return;
     }
+    //Increase the number of unused arrays
+    if (!tail)
+        ++unused_arrays;
+    size_t temp_unused = unused_arrays;
+    //This will be the new array with the added elements
+    element * values = new element[length() - 1];
+    //Get old array
 
-    //Keeps track of the current Node
-    Node * curr = data;
-    //Keeps track of the previous Node
-    Node * temp;
-    element last_temp;
+    element * curr = contents();
+    //Copy values from current into new array and insert the new value
+    for (int i = 0; i < length() - 1; ++i) {
+        if (i < position - 1)
+            values[i] = curr[i];
+        else if (i >= position - 1)
+            values[i] = curr[i + 1];
+    }
 
-    if (position > 50) {
-        while (position > 50) {
-            curr = curr->next;
-            position -=50;
-        }
+    size_t size = length() - 1;
+    //Push back all of the new elements into the new list
+    clear();
+    for (int i = 0; i < size; ++i) {
+       push_back(values[i]);
     }
-    while (curr) {
-        //Move all the elements up by one
-        if (curr == data) {
-            for (int i = position - 1; i < array_size; ++i) {
-                curr->list[i] = curr->list[i + 1];
-            }
-            temp = data;
-            curr = curr->next;
-        }
-        else {
-            temp->list[array_size - 1] = curr->list[0];
-            for (int i = 0; i < array_size; ++i) {
-                curr->list[i] = curr->list[i + 1];
-            }
-            temp = curr;
-            curr = curr->next;
-        }
-    }
-    --tail;
+
+    //Deallocate unused arrays if condition holds
+    deallocate_old();
 }
 template <class element>
 //Removes and returns an element from the back of the list
@@ -231,12 +261,15 @@ element cop3530::CDAL<element>::pop_back () {
             }
             else {
                 tail = 49;
+                ++unused_arrays;
                 temp = NULL;
                 break;
             }
         }
         temp = temp->next;
     }
+    //Deallocate unused arrays if condition holds
+    deallocate_old();
     return last;
 
 }
@@ -265,10 +298,14 @@ element cop3530::CDAL<element>::pop_front () {
             curr = curr->next;
         }
     }
-    if (tail == 0)
+    if (tail == 0) {
         tail = array_size - 1;
+        ++unused_arrays;
+    }
     else
         --tail;
+    //Deallocate unused arrays if condition holds
+    deallocate_old();
     return front;
 }
 template <class element>
@@ -334,21 +371,27 @@ size_t cop3530::CDAL<element>::length () {
         temp = temp->next;
         len += 50;
     }
-    std::cout << "LENGTH: " << len << std::endl;
+/*    if (unused_arrays) {
+        int temp_unused = unused_arrays;
+        while (temp_unused > 0) {
+            len -= 50;
+            --temp_unused;
+        }
+    } */
     return len;
 }
 template <class element>
 //Clears the array of all its values
 void cop3530::CDAL<element>::clear () {
     //Delete each array in each Node and it's respective Node
-    Node * temp = data;
-    while (temp) {
-        delete [] data->list;
-        delete data;
-        data = temp->next;
-    }
-    delete temp;
-    CDAL();
+    delete [] data;
+    data = NULL;
+    //Make a new list with data pointing to it
+    data = new Node();
+    data->list = new element[array_size];
+    tail = -1;
+    data->next = NULL;
+    unused_arrays = 0;
 }
 ///ERASE
 template <class element>
@@ -365,36 +408,43 @@ void cop3530::CDAL<element>::shitPrint() {
     }
     std::cout << std::endl;
 }
-template <class element> ///DO THIS FOR ALL
+template <class element>
 //Returns whether the list contains the specified value
-bool cop3530::CDAL<element>::contains (element object, const std::type_info& type) {
+bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
+    if (is_empty())
+        return false;
+    Node * temp = data;
+    while (temp) {
+        //If the last node
+        if (!(temp->next)) {
+            for (int i = 0; i < length(); ++i)
+                if (equals_function(object, temp->list[i])) return true;
+        }
+        else {
+            for (int i = 0; i < array_size; ++i)
+                if (equals_function(object, temp->list[i])) return true;
+        }
+        temp = temp->next;
+    }
+    return false;
 }
 template <class element>
 //Prints out the contents of the list to the ostream
 std::ostream& cop3530::CDAL<element>::print (std::ostream& out) {
     if (is_empty())
         out << "<empty list>";
-
-    out << "<";
-    Node * temp = data;
-    while (temp) {
-        if (!(temp->next)) {
-            for (int i = 0; i <= tail; ++i) {
-                if (i == tail)
-                    out << temp->list[i];
-                else
-                    out << temp->list[i] << ",";
-            }
-            break;
+    else {
+        out << "<";
+        //Copy contents of array
+        element * arr = contents();
+        for (int i = 0; i < length(); ++i) {
+            if (i == length() - 1)
+                out << arr[i];
+            else
+                out << arr[i] << ",";
         }
-        else {
-            for (int i = 0; i < array_size; ++i) {
-                out << temp->list[i] << ",";
-        }
+        out << ">";
     }
-    temp = temp->next;
-    }
-    out << ">";
     return out;
 }
 template <class element>
@@ -431,6 +481,34 @@ void cop3530::CDAL<element>::allocate_new(){
             break;
         }
         curr = curr->next;
+    }
+}
+template <class element>
+//Deallocated half the arrays when more than half are unused
+void cop3530::CDAL<element>::deallocate_old() {
+    size_t total_arrays = 0;
+    Node * temp = data;
+    //Get the total number of arrays
+    while (temp) {
+        ++total_arrays;
+        temp = temp->next;
+    }
+    size_t half_total = size_t(total_arrays / 2 + 0.5);
+    size_t to_deallocate = size_t(unused_arrays / 2 + 0.5);
+    size_t temp_length = length();
+
+    //See if more than half of the arrays are unused
+    if (half_total < unused_arrays) {
+        element * temp = contents();
+        //Clear the current list to make a new one
+        clear();
+        for (int i = 0; i < temp_length; ++i)
+            push_back(temp[i]);
+        //Deallocate half of unused arrays
+        while (to_deallocate > 0) {
+            allocate_new();
+            --to_deallocate;
+        }
     }
 }
 

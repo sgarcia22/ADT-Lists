@@ -10,6 +10,12 @@ using namespace cop3530;
 
 int main()
 {
+    ///CONTENT
+//    cop3530::SSLL<int> * ssll = new cop3530::SSLL<int> (100);
+//ssll->push_back(5);
+   // cout << ssll->contains(5);
+
+
     ///SSAL
     /*cop3530::SSLL<int> * list = new cop3530::SSLL<int> (5);
     list->push_back(5);
@@ -116,10 +122,26 @@ int main()
   cout << endl;
     cout << list->item_at(3) << endl;;
   list->shitPrint(); */
-
+   /* cop3530::SSLL<int> * ssll = new cop3530::SSLL<int> (100);
+   cop3530::SDAL<int> * sdal = new cop3530::SDAL<int>(100);
+   cop3530::PSLL<int> * psll = new cop3530::PSLL<int> (100);
+   for (int i = 0; i < 100; ++i) {
+        ssll->push_back(i);
+    sdal->push_back(i);
+    psll->push_back(i);
+   }
+   sdal->remove(10);
+   psll->remove(10);
+   ssll->remove(10);
+   sdal->shitPrint();
+   psll->shitPrint();
+    ssll->shitPrint();
   ///SDAL
  /* cop3530::SDAL<int> * list = new cop3530::SDAL<int>(100);
-   list->push_front(4);
+
+    list->shitPrint();
+   list->push_back(4);
+      list->shitPrint();
     list->push_front(5);
      list->push_front(3);
       list->push_front(1);
@@ -127,7 +149,7 @@ int main()
 
         list->shitPrint();
         cout << endl;
-        list->allocate_new(); */
+        list->allocate_new();*?
 
       //  list->shitPrint();
     /*  std::ofstream outFile("SDALTest.txt");
@@ -162,6 +184,49 @@ cout << endl;
 
  ///CDAL
     cop3530::CDAL<int> * list = new cop3530::CDAL<int>();
+    for (int i = 1; i<= 100; ++i)
+        list->push_back(i);
+    list->insert(30, 51);
+    list->insert(79, 1);
+  //  list->shitPrint();
+  //  cout << list->item_at(51) << endl;
+    list->remove(1);
+  //   list->shitPrint();
+     list->remove(51);
+   //   list->shitPrint();
+   // cout << list->length();
+   // cout << endl;
+ /*   for (int i = 1; i<=100; ++i)
+        list->pop_front();
+    list->shitPrint();
+    list->deallocate_old();
+    list->shitPrint();*/
+   // cout << endl;
+  //  cout << list->length();
+  /*  int * arr = list->contents();
+    for (int i = 0; i< list->length(); ++i)
+        cout << arr[i] << "    ";
+    cout << endl;
+   std::ofstream outFile("CDALTest.txt");
+      list->print(outFile); */
+  //   cout<< list->length() << endl;;
+ //   list->deallocate_old();
+
+  /*  list->shitPrint();
+    list->insert(30,51);
+    list->insert(79,1);
+    list->shitPrint();
+    cout << endl;
+    cout << list->length() << endl;
+    cout << endl;
+    cout << list->item_at(52) << "   " << list->item_at(102);
+    list->remove(1);
+     cout << list->length() << endl;
+    list->shitPrint();
+    list->remove(51);
+     cout << list->length() << endl;
+    list->shitPrint(); */
+
  /*   list->length();
     list->allocate_new();
     cout << endl;
@@ -173,7 +238,7 @@ cout << endl;
     list->shitPrint(); */
 
    // cout << endl;
-    int number = 1;
+ /*   int number = 1;
     for (int i = 0; i < 150; ++i, ++number)
         list->push_back(number);
 
@@ -194,7 +259,7 @@ cout << endl;
       list->print(outFile);
 
       int * shit = list->contents();
-       cout << shit[148];
+       cout << shit[148]; */
   //  list->push_front(number);
 
 /*    cout << endl;

@@ -5,8 +5,7 @@
 #include <iostream>
 
 namespace cop3530 {
-///USE THE SAME INDEX ARITHMETIC FOR ALL OF THE CLASSES
-///HERE USING THE STARTING AT 1 CRAP
+
 template <class element>
 
 class SDAL : public ADT<element>
@@ -29,7 +28,7 @@ class SDAL : public ADT<element>
         size_t length () override;
         void clear () override;
         void shitPrint(); ///ERASE
-        bool contains (element object, const std::type_info& type) override;
+        bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         void allocate_new();
@@ -40,6 +39,8 @@ class SDAL : public ADT<element>
         int tail;
         element * list;
         int max_size;
+        //Keeps track of the initial size
+        int initial_size;
 
 };
 }
@@ -47,7 +48,9 @@ class SDAL : public ADT<element>
 template <class element>
 //Constructor, initializes array
 cop3530::SDAL<element>::SDAL(size_t inputSize) {
+
     max_size = inputSize;
+    initial_size = inputSize;
     //Setting tail to -1 because it is accessed through index
     tail = -1;
     list = new element [max_size];
@@ -64,7 +67,7 @@ template <class element>
 //Inserts element at a certain position
 void cop3530::SDAL<element>::insert(element object, int position) {
     if (is_full())
-        throw std::runtime_error("The object cannot be added, the list is full.\n ");
+        allocate_new();
     if (position > max_size)
         throw std::runtime_error("Not a valid position.\n ");
     if (position > length()) {
@@ -75,9 +78,10 @@ void cop3530::SDAL<element>::insert(element object, int position) {
         push_front(object);
         return;
     }
-    for (int i = 0; i < length(); ++i) {
+
+    for (int i = length(); i > 0; --i) {
         if (i + 1 >= position) {
-            list[i + 1] = list[i];
+            list[i] = list[i - 1];
         }
     }
     list[position - 1] = object;
@@ -87,23 +91,22 @@ template <class element>
 //Inserts element at the back of the list
 void cop3530::SDAL<element>::push_back (element object) {
     if (is_full())
-        throw std::runtime_error("The object cannot be added, the list is full.\n ");
-    list[tail + 1] = object;
+        allocate_new();
     ++tail;
-
+    list[tail] = object;
 }
 template <class element>
 //Inserts element at the front of the list
 void cop3530::SDAL<element>::push_front (element object) {
     if (is_full())
-        throw std::runtime_error("The object cannot be added, the list is full.\n ");
-
-    for (int i = length(); i >= 0; --i) {
-        list[i] = list[i - 1];
+        allocate_new();
+    if (!is_empty()) {
+        for (int i = length(); i >= 0; --i) {
+            list[i] = list[i - 1];
+        }
     }
     list[0] = object;
     ++tail;
-
 }
 template <class element>
 //Replaces an element at the specified index
@@ -178,7 +181,6 @@ bool cop3530::SDAL<element>::is_empty () {
 template <class element>
 //Returns whether the list is full
 bool cop3530::SDAL<element>::is_full () {
-    allocate_new();
     return (tail + 1 == max_size);
 }
 template <class element>
@@ -190,12 +192,17 @@ template <class element>
 //Clears the array of all its values
 void cop3530::SDAL<element>::clear () {
     tail = -1;
+    delete [] list;
+    list = new element [initial_size];
+    data = list;
+    max_size = initial_size;
+
 }
 ///ERASE
 template <class element>
 
 void cop3530::SDAL<element>::shitPrint() {
-       for (int i = 0; i < max_size; ++ i) {
+    for (int i = 0; i < max_size; ++ i) {
         if (i + 1 > length())
             std::cout << 0 << "    ";
         else
@@ -206,8 +213,15 @@ void cop3530::SDAL<element>::shitPrint() {
 }
 template <class element>
 //Returns whether the list contains the specified value
-bool cop3530::SDAL<element>::contains (element object, const std::type_info& type) {
-    ///DO
+bool cop3530::SDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
+    if (is_empty())
+        return false;
+    for (int i = 0; i < length(); ++i) {
+        if (equals_function(object, list[i]))
+            return true;
+    }
+    return false;
+
 }
 template <class element>
 //Prints out the contents of the list to the ostream

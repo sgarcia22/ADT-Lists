@@ -4,12 +4,11 @@
 #include <iostream>
 #include <typeinfo>
 namespace cop3530 {
-///DEALLOCATE SHIT
+
 template <class element>
 
 class SSLL : public ADT<element>
 {
-    ///ADD DESTRUCTOR
     public:
         SSLL(size_t size);
         ~SSLL();
@@ -28,7 +27,7 @@ class SSLL : public ADT<element>
         size_t length () override;
         void clear () override;
         void shitPrint(); ///ERASE
-        bool contains (element object, const std::type_info& type) override;
+        bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
 
@@ -44,13 +43,20 @@ class SSLL : public ADT<element>
 };
 }
 
-template <class element>
 //Constructor, initialize Nodes
+template <class element>
 cop3530::SSLL<element>::SSLL(size_t size) {
     //Set head and tail equal to null
     head = NULL;
     tail = NULL;
     max_size = size;
+}
+
+template <class element>
+//Destructor, deallocates and deletes Nodes
+cop3530::SSLL<element>::~SSLL() {
+    delete head;
+    delete tail;
 }
 
 template <class element>
@@ -73,13 +79,6 @@ void cop3530::SSLL<element>::push_front(element object) {
     }
     else
         throw std::runtime_error("The List is full, cannot push to the front.\n ");
-}
-
-template <class element>
-//Deallocate Nodes
-cop3530::SSLL<element>::~SSLL() {
-     delete head;
-     delete tail;
 }
 
 template <class element>
@@ -110,8 +109,10 @@ void cop3530::SSLL<element>::push_back(element object) {
 template <class element>
 //Inserts an element at the specified position
 void cop3530::SSLL<element>::insert(element object, int position) {
+    if (is_full())
+        throw std::runtime_error("The list is full, cannot insert.\n ");
     if (is_empty() && position != 0)
-        throw std::runtime_error("The list is empty, cannot insert.\n ");
+        throw std::runtime_error("The list is empty, cannot insert at desired position.\n ");
     if (position > length())
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
@@ -148,7 +149,7 @@ void cop3530::SSLL<element>::replace(element object, int position) {
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index == position) {
+        if (index == position - 1) {
             temp->data = object;
             break;
         }
@@ -164,7 +165,7 @@ void cop3530::SSLL<element>::remove(int position) {
         throw std::runtime_error("The list is empty, cannot replace.\n ");
     if (position > length())
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-    if (position == 0) {
+    if (position == 1) {
         pop_front();
         return;
     }
@@ -175,10 +176,8 @@ void cop3530::SSLL<element>::remove(int position) {
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index + 1 == position) {
-            Node * curr = temp;
+        if (index == position - 2) {
             temp->next = temp->next->next;
-            curr = NULL;
             break;
         }
         temp = temp->next;
@@ -195,7 +194,7 @@ element cop3530::SSLL<element>::item_at(int position) {
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index + 1 == position) {
+        if (index == position - 1) {
             return temp->data;
         }
         temp = temp->next;
@@ -337,23 +336,22 @@ element * cop3530::SSLL<element>::contents() {
     }
     return values;
 }
-///FIX
+
 template <class element>
-//See if the list contains a certain element with the matching type
-bool cop3530::SSLL<element>::contains (element object, const std::type_info& type)  {
+//See if the list contains a certain element through a function pointer to make sure it is the exact element
+bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
     if (is_empty())
-        return false;
-  //  std::cout << typeid(object).name();
-    if (type != typeid (object))
         return false;
 
     Node * temp = head;
     while (temp) {
-        if (temp->data == object)
-                return true;
-            temp = temp->next;
+        if (equals_function(object, temp->data))
+            return true;
+        temp = temp->next;
     }
+
     return false;
+
 }
 
 #endif // SSLL_H
