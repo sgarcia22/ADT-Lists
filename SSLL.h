@@ -27,10 +27,13 @@ class SSLL : public ADT<element>
         size_t length () override;
         void clear () override;
         void shitPrint(); ///ERASE
-        bool contains (element object, bool (*equals_function) (element, element)) override;
+        bool contains (element object/*, bool (*equals_function) (element, element)*/) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
-
+        bool equals (element a, element b);
+        //Pointer-to-member-function of class
+        typedef bool (cop3530::SSLL<element>::*equals_evaluator)(element, element); ///??
+        equals_evaluator test;
     private:
         struct Node {
             element data;
@@ -339,19 +342,25 @@ element * cop3530::SSLL<element>::contents() {
 
 template <class element>
 //See if the list contains a certain element through a function pointer to make sure it is the exact element
-bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
+bool cop3530::SSLL<element>::contains (element object/*, bool (*equals_function) (element, element)*/)  {
     if (is_empty())
         return false;
 
     Node * temp = head;
     while (temp) {
-        if (equals_function(object, temp->data))
+        if (temp->data == object)
+        //if (equals_function(object, temp->data))
             return true;
         temp = temp->next;
     }
 
     return false;
 
+} ///DUNNO?~!
+template <class element>
+//Equals function that compares two elements
+bool cop3530::SSLL<element>::equals (element a, element b) {
+    return a == b;
 }
 
 #endif // SSLL_H

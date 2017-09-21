@@ -120,6 +120,16 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
 
     std::ifstream in_file_2 ("test_case_2.txt");
     if (!in_file_2) return false;
+
+    ///CHECK PRINT CONTENTS?
+   /* std::string output;
+
+    in_file_1.open("test_case_1.txt");
+    if (in_file_1.is_open()) {
+        while(std::getline(in_file_1, output))
+            std::cout << output;
+    }
+*/
     //Checking contents Function
     element true_contents [5] = {1, 2, 3, 4, 5};
     element * list_contents = test_case_1->contents();
@@ -127,6 +137,22 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
         if (true_contents[i] != list_contents[i]) return false;
     }
     //Print function file matches contents
+
+    //Check contains functions
+    if (!test_case_1->contains(5)) return false;
+    if (test_case_1->contains(7)) return false;
+
+    test_case_1->clear();
+
+    index = 1;
+    for (int i = 0; i < 100; ++i, ++index)
+        test_case_1->push_back(index);
+
+    if (!test_case_1->contains(59)) return false;
+    if (!test_case_1->contains(1)) return false;
+    if (!test_case_1->contains(100)) return false;
+    if (test_case_1->contains(101)) return false;
+
 
     return true;
 }

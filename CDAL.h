@@ -28,7 +28,7 @@ class CDAL : public ADT<element>
         size_t length () override;
         void clear () override;
         void shitPrint(); ///ERASE
-        bool contains (element object, bool (*equals_function) (element, element)) override;
+        bool contains (element object/*, bool (*equals_function) (element, element)*/) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         //Will allocate a new array if full
@@ -412,19 +412,21 @@ void cop3530::CDAL<element>::shitPrint() {
 }
 template <class element>
 //Returns whether the list contains the specified value
-bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
+bool cop3530::CDAL<element>::contains (element object/*, bool (*equals_function) (element, element)*/) {
     if (is_empty())
         return false;
     Node * temp = data;
     while (temp) {
         //If the last node
         if (!(temp->next)) {
-            for (int i = 0; i < tail - 1; ++i)
-                if (equals_function(object, temp->list[i])) return true;
+            for (int i = 0; i <= tail; ++i)
+           //     if (equals_function(object, temp->list[i])) return true;
+                if (object == temp->list[i]) return true;
         }
         else {
             for (int i = 0; i < array_size; ++i)
-                if (equals_function(object, temp->list[i])) return true;
+               // if (equals_function(object, temp->list[i])) return true;
+               if (object == temp->list[i]) return true;
         }
         temp = temp->next;
     }

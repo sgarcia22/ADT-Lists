@@ -30,7 +30,7 @@ class PSLL : public ADT<element>
         void clear () override;
         void shitPrint(); ///ERASE
         void poolPrint(); ///ERASE
-        bool contains (element object, bool (*equals_function) (element, element)) override;
+        bool contains (element object/*, bool (*equals_function) (element, element)*/) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         //Function that will deallocate the free Nodes that are not being used
@@ -447,12 +447,13 @@ element * cop3530::PSLL<element>::contents() {
 
 template <class element>
 //See if the list contains a certain element with the matching type
-bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
+bool cop3530::PSLL<element>::contains (element object/*, bool (*equals_function) (element, element)*/)  {
     if (is_empty())
         return false;
     Node * temp = head;
     while (temp) {
-        if (equals_function(object, temp->data))
+        //if (equals_function(object, temp->data))
+        if (object == temp->data)
             return true;
         temp = temp->next;
     }

@@ -17,10 +17,16 @@ int main()
 
 
     ///SSAL
-    /*cop3530::SSLL<int> * list = new cop3530::SSLL<int> (5);
+    cop3530::SSLL<int> * list = new cop3530::SSLL<int> (5);
     list->push_back(5);
     list->push_back(3);
-    list->push_front(4);*/
+    list->push_front(4);
+    list->shitPrint();
+    cout << list->contains(70);
+   // list->test = &(list->equals);
+  //  list->contains(5, list->test);
+    //list->a_pointer = &(list->equals());
+    //(list->contains(5, list->*equals)(5, 6));
  /*
     cop3530::SSLL<string> * list = new cop3530::SSLL<string> (5);
     list->push_back("hi");
@@ -181,7 +187,7 @@ cout << endl;
  list->remove(5);
  cout << endl;
  list->shitPrint();*/
-
+/*
  ///CDAL
     cop3530::CDAL<int> * list = new cop3530::CDAL<int>();
     for (int i = 1; i<= 100; ++i)

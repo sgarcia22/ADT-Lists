@@ -25,7 +25,7 @@ class ADT
         virtual bool is_full () = 0;
         virtual size_t length () = 0;
         virtual void clear () = 0;
-        virtual bool contains (element object, bool (*equals_function) (element, element)) = 0;
+        virtual bool contains (element object/*, bool (*equals_function) (element, element)*/) = 0;
         virtual std::ostream& print (std::ostream& out) = 0;
         virtual element * contents () = 0;
 };
