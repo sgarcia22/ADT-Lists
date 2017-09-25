@@ -11,6 +11,12 @@
 
 template <class element>
 
+bool equals(element a, element b) {
+    return a == b;
+}
+
+template <class element>
+
 bool test_int_passed(cop3530::ADT<element> * test_case_1) {
 
     int index = 1;
@@ -139,8 +145,8 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     //Print function file matches contents
 
     //Check contains functions
-    if (!test_case_1->contains(5)) return false;
-    if (test_case_1->contains(7)) return false;
+    if (!test_case_1->contains(5, &equals)) return false;
+    if (test_case_1->contains(7, &equals)) return false;
 
     test_case_1->clear();
 
@@ -148,10 +154,10 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     for (int i = 0; i < 100; ++i, ++index)
         test_case_1->push_back(index);
 
-    if (!test_case_1->contains(59)) return false;
-    if (!test_case_1->contains(1)) return false;
-    if (!test_case_1->contains(100)) return false;
-    if (test_case_1->contains(101)) return false;
+    if (!test_case_1->contains(59, &equals)) return false;
+    if (!test_case_1->contains(1, &equals)) return false;
+    if (!test_case_1->contains(100, &equals)) return false;
+    if (test_case_1->contains(101, &equals)) return false;
 
 
     return true;

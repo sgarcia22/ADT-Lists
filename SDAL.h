@@ -28,7 +28,7 @@ class SDAL : public ADT<element>
         size_t length () override;
         void clear () override;
         void shitPrint(); ///ERASE
-        bool contains (element object/*, bool (*equals_function) (element, element)*/) override;
+        bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         void allocate_new();
@@ -213,12 +213,12 @@ void cop3530::SDAL<element>::shitPrint() {
 }
 template <class element>
 //Returns whether the list contains the specified value
-bool cop3530::SDAL<element>::contains (element object/*, bool (*equals_function) (element, element)*/) {
+bool cop3530::SDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
     if (is_empty())
         return false;
     for (int i = 0; i < length(); ++i) {
-      //  if (equals_function(object, list[i]))
-        if (object == list[i])
+        if (equals_function(object, list[i]))
+      //  if (object == list[i])
             return true;
     }
     return false;

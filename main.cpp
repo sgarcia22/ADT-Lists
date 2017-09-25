@@ -22,7 +22,10 @@ int main()
     list->push_back(3);
     list->push_front(4);
     list->shitPrint();
-    cout << list->contains(70);
+
+    for (SSLL<int>::iterator i = list->begin(); i != list->end(); i++)
+        std::cout << *i << "  ";
+
    // list->test = &(list->equals);
   //  list->contains(5, list->test);
     //list->a_pointer = &(list->equals());
