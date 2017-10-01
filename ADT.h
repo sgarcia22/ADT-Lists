@@ -6,7 +6,7 @@
 
 namespace cop3530 {
 
-template <class element>
+template <typename element>
 
 class ADT
 {

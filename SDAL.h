@@ -6,7 +6,7 @@
 
 namespace cop3530 {
 
-template <class element>
+template <typename element>
 
 class SDAL : public ADT<element>
 {
@@ -42,10 +42,72 @@ class SDAL : public ADT<element>
         //Keeps track of the initial size
         int initial_size;
 
+         public:
+
+    template <typename DataT>
+    class SDAL_Iter {
+        public:
+            //Iterator Compatibility
+            using iterator_category = std::forward_iterator_tag;
+            using iterator_category_const = const std::forward_iterator_tag;
+            using value_type = element;
+            using reference = element&;
+            using pointer = element*;
+            using difference_type = std::ptrdiff_t;
+
+            //Type aliases
+            using self_type = SDAL_Iter;
+            using self_reference = SDAL_Iter&;
+
+        private:
+            pointer here;
+        public:
+            //Points to here
+            explicit SDAL_Iter(pointer start = nullptr) : here (start) {}
+            SDAL_Iter (const SDAL_Iter& src) : here (src.here) {}
+
+            reference operator*() const {return *here;}
+            reference operator->() const {return here;}
+            //Equals sign operator
+            self_reference operator=(SDAL_Iter<DataT> const& src) {
+                if (this == &src)
+                    return *this;
+                here = src.here;
+                return *this;
+            }
+            //Pre-increment operator
+            self_reference operator++() {
+                ++here;
+                return *this;
+            }
+            //Post-increment operator
+            self_reference operator++(int) {
+                self_type temp(*this);
+                ++here;
+                return temp;
+            }
+
+            bool operator==(SDAL_Iter<DataT> const& rhs) const {return here == rhs.here;}
+            bool operator!=(SDAL_Iter<DataT> const& rhs) const {return here != rhs.here;}
+
+    };
+
+    //Iterator Implementation
+    using size_t = std::size_t;
+    using value_type = element;
+    using iterator = SDAL_Iter<element>;
+    using const_iterator = SDAL_Iter<element const>;
+    //Iterator begin and end functions
+    iterator begin () {return iterator(list);}
+    iterator end () {return iterator(list + tail + 1);}
+
+    const_iterator begin () const {return const_iterator(data);}
+    const_iterator end () const {return const_iterator(data + tail + 1);}
+
 };
 }
 
-template <class element>
+template <typename element>
 //Constructor, initializes array
 cop3530::SDAL<element>::SDAL(size_t inputSize) {
 
@@ -57,13 +119,13 @@ cop3530::SDAL<element>::SDAL(size_t inputSize) {
     data = list;
 
 }
-template <class element>
+template <typename element>
 //Destructor, deallocates array and pointer
 cop3530::SDAL<element>::~SDAL() {
     delete [] list;
     delete data;
 }
-template <class element>
+template <typename element>
 //Inserts element at a certain position
 void cop3530::SDAL<element>::insert(element object, int position) {
     if (is_full())
@@ -87,7 +149,7 @@ void cop3530::SDAL<element>::insert(element object, int position) {
     list[position - 1] = object;
     ++tail;
 }
-template <class element>
+template <typename element>
 //Inserts element at the back of the list
 void cop3530::SDAL<element>::push_back (element object) {
     if (is_full())
@@ -95,7 +157,7 @@ void cop3530::SDAL<element>::push_back (element object) {
     ++tail;
     list[tail] = object;
 }
-template <class element>
+template <typename element>
 //Inserts element at the front of the list
 void cop3530::SDAL<element>::push_front (element object) {
     if (is_full())
@@ -108,7 +170,7 @@ void cop3530::SDAL<element>::push_front (element object) {
     list[0] = object;
     ++tail;
 }
-template <class element>
+template <typename element>
 //Replaces an element at the specified index
 void cop3530::SDAL<element>::replace (element object, int position) {
     if (position > max_size)
@@ -117,7 +179,7 @@ void cop3530::SDAL<element>::replace (element object, int position) {
         throw std::runtime_error("No element at that position to replace.\n ");
     list[position - 1] = object;
 }
-template <class element>
+template <typename element>
 //Removes an element at the specified position and moves all the succeeding elements up the list by one
 void cop3530::SDAL<element>::remove (int position) {
     if (is_empty())
@@ -131,7 +193,7 @@ void cop3530::SDAL<element>::remove (int position) {
     --tail;
     allocate_new();
 }
-template <class element>
+template <typename element>
 //Removes and returns an element from the back of the list
 element cop3530::SDAL<element>::pop_back () {
     if (is_empty())
@@ -141,7 +203,7 @@ element cop3530::SDAL<element>::pop_back () {
     allocate_new();
     return temp;
 }
-template <class element>
+template <typename element>
 //Removes and returns an element from the front of the list, moving all the succeeding element up the list by one
 element cop3530::SDAL<element>::pop_front () {
     if (is_empty())
@@ -154,7 +216,7 @@ element cop3530::SDAL<element>::pop_front () {
     return temp;
 
 }
-template <class element>
+template <typename element>
 //Returns the item at the specified index
 element cop3530::SDAL<element>::item_at (int position) {
     if (position > max_size)
@@ -163,32 +225,32 @@ element cop3530::SDAL<element>::item_at (int position) {
         throw std::runtime_error("No element at that position.\n ");
     return list[position - 1];
 }
-template <class element>
+template <typename element>
 //Returns the element at the back of the list
 element cop3530::SDAL<element>::peek_back () {
     return list[tail];
 }
-template <class element>
+template <typename element>
 //Returns the element at the front of the list
 element cop3530::SDAL<element>::peek_front () {
     return list[0];
 }
-template <class element>
+template <typename element>
 //Returns whether the list is empty
 bool cop3530::SDAL<element>::is_empty () {
     return (tail == -1);
 }
-template <class element>
+template <typename element>
 //Returns whether the list is full
 bool cop3530::SDAL<element>::is_full () {
     return (tail + 1 == max_size);
 }
-template <class element>
+template <typename element>
 //Returns the length of the elements in the list
 size_t cop3530::SDAL<element>::length () {
     return tail + 1;
 }
-template <class element>
+template <typename element>
 //Clears the array of all its values
 void cop3530::SDAL<element>::clear () {
     tail = -1;
@@ -199,7 +261,7 @@ void cop3530::SDAL<element>::clear () {
 
 }
 ///ERASE
-template <class element>
+template <typename element>
 
 void cop3530::SDAL<element>::shitPrint() {
     for (int i = 0; i < max_size; ++ i) {
@@ -211,7 +273,7 @@ void cop3530::SDAL<element>::shitPrint() {
     std::cout << "TAIL: " << tail << std::endl;
     std::cout << "SIZE: " << max_size << std::endl;
 }
-template <class element>
+template <typename element>
 //Returns whether the list contains the specified value
 bool cop3530::SDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
     if (is_empty())
@@ -224,7 +286,7 @@ bool cop3530::SDAL<element>::contains (element object, bool (*equals_function) (
     return false;
 
 }
-template <class element>
+template <typename element>
 //Prints out the contents of the list to the ostream
 std::ostream& cop3530::SDAL<element>::print (std::ostream& out) {
     if (is_empty())
@@ -241,7 +303,7 @@ std::ostream& cop3530::SDAL<element>::print (std::ostream& out) {
     }
     return out;
 }
-template <class element>
+template <typename element>
 //Returns the contents of the list
 element * cop3530::SDAL<element>::contents() {
     if (is_empty())
@@ -251,7 +313,7 @@ element * cop3530::SDAL<element>::contents() {
         values[i] = list[i];
     return values;
 }
-template <class element>
+template <typename element>
 //Allocate a new array is the current one is using too much or too little memory
 void cop3530::SDAL<element>::allocate_new() {
     if (is_full()) {

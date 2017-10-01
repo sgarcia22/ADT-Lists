@@ -6,7 +6,7 @@
 
 namespace cop3530 {
 
-template <class element>
+template <typename element>
 
 class SSLL : public ADT<element>
 {
@@ -53,8 +53,8 @@ class SSLL : public ADT<element>
 
             public:
                 //Iterator Compatibility
-                typedef std::forward_iterator_tag iterator_category;
-                typedef const std::forward_iterator_tag iterator_category_const;
+                using iterator_category = std::forward_iterator_tag;
+                using iterator_category_const = const std::forward_iterator_tag;
                 using value_type = element;
                 using reference = element&;
                 using pointer = element*;
@@ -63,28 +63,38 @@ class SSLL : public ADT<element>
                 //Type aliases
                 using self_type = SSLL_Iter;
                 using self_reference = SSLL_Iter&;
+
             private:
                 Node * here;
+
             public:
                 //Points to here
                 explicit SSLL_Iter(Node * start = nullptr) : here (start) {}
                 SSLL_Iter (const SSLL_Iter& src) : here (src.here) {}
 
-                reference operator*() const {return here;}
-                reference operator->() const {return here->data;}
-
-                self_reference operator = (SSLL_Iter<DataT> const& src) {}
+                reference operator*() const {return here->data;}
+                reference operator->() const {return here;}
+                //Equals sign operator
+                self_reference operator = (SSLL_Iter<DataT> const& src) {
+                    if (this == &src)
+                        return *this;
+                    here = src.here;
+                    return *this;
+                }
                 //Pre-increment operator
                 self_reference operator++() {
-                    self_type temp(*this);
-                    here++;
-                    return temp;
+                    if (here != nullptr) {
+                        here = here->next;
+                        return *this;
+                    }
                 }
                 //Post-increment operator
                 self_type operator++(int) {
-                    self_type temp(*this);
-                    ++(*this);
-                    return temp;
+                    if (here != nullptr) {
+                        self_type temp(*this);
+                        here = here->next;
+                        return temp;
+                    }
                 }
 
                 bool operator==(SSLL_Iter<DataT> const& rhs) const {return here == rhs.here;}
@@ -99,21 +109,17 @@ class SSLL : public ADT<element>
         using iterator = SSLL_Iter<element>;
         using const_iterator = SSLL_Iter<element const>;
         //Iterator begin and end functions
-        iterator begin () {return iterator(*this);}
-        iterator end () {
-        ///TODO
-        }
-        const_iterator begin() const {return iterator(*this);}
-        const_iterator end() const {
-        ///TODO
-        }
+        iterator begin () {return iterator(head);}
+        iterator end () {return iterator(tail->next);}
 
+        const_iterator begin() const {return const_iterator(head);}
+        const_iterator end() const {return const_iterator(tail->next);}
 };
 
 }
 
 //Constructor, initialize Nodes
-template <class element>
+template <typename element>
 cop3530::SSLL<element>::SSLL(size_t size) {
     //Set head and tail equal to null
     head = NULL;
@@ -121,14 +127,14 @@ cop3530::SSLL<element>::SSLL(size_t size) {
     max_size = size;
 }
 
-template <class element>
+template <typename element>
 //Destructor, deallocates and deletes Nodes
 cop3530::SSLL<element>::~SSLL() {
     delete head;
     delete tail;
 }
 
-template <class element>
+template <typename element>
 //Pushes an element to the front
 void cop3530::SSLL<element>::push_front(element object) {
     if (!is_full()) {
@@ -150,7 +156,7 @@ void cop3530::SSLL<element>::push_front(element object) {
         throw std::runtime_error("The List is full, cannot push to the front.\n ");
 }
 
-template <class element>
+template <typename element>
 //Pushes an element to the back
 void cop3530::SSLL<element>::push_back(element object) {
 
@@ -174,8 +180,8 @@ void cop3530::SSLL<element>::push_back(element object) {
         throw std::runtime_error("The List is full, cannot push back.\n ");
 
 }
-///CHECK
-template <class element>
+
+template <typename element>
 //Inserts an element at the specified position
 void cop3530::SSLL<element>::insert(element object, int position) {
     if (is_full())
@@ -208,7 +214,7 @@ void cop3530::SSLL<element>::insert(element object, int position) {
     }
 }
 
-template <class element>
+template <typename element>
 //Replaces an element at the specified position
 void cop3530::SSLL<element>::replace(element object, int position) {
     if (is_empty())
@@ -226,8 +232,8 @@ void cop3530::SSLL<element>::replace(element object, int position) {
         ++index;
     }
 }
-///CHECK
-template <class element>
+
+template <typename element>
 //Removes an element at the specified position
 void cop3530::SSLL<element>::remove(int position) {
     if (is_empty())
@@ -254,7 +260,7 @@ void cop3530::SSLL<element>::remove(int position) {
     }
 }
 
-template <class element>
+template <typename element>
 //Returns the item at a specified position
 element cop3530::SSLL<element>::item_at(int position) {
     if (position > length())
@@ -271,7 +277,7 @@ element cop3530::SSLL<element>::item_at(int position) {
     }
 }
 
-template <class element>
+template <typename element>
 //Removes and returns the last element
 element cop3530::SSLL<element>::pop_back() {
     if (is_empty())
@@ -292,7 +298,7 @@ element cop3530::SSLL<element>::pop_back() {
     return temp;
 }
 
-template <class element>
+template <typename element>
 //Returns the last element
 element cop3530::SSLL<element>::peek_back() {
     if (is_empty())
@@ -300,7 +306,7 @@ element cop3530::SSLL<element>::peek_back() {
     return tail->data;
 }
 
-template <class element>
+template <typename element>
 //Removes and returns the first element
 element cop3530::SSLL<element>::pop_front() {
     if (is_empty())
@@ -315,7 +321,7 @@ element cop3530::SSLL<element>::pop_front() {
     return frontItem;
 }
 
-template <class element>
+template <typename element>
 //Returns the first element
 element cop3530::SSLL<element>::peek_front() {
     if (is_empty())
@@ -323,19 +329,19 @@ element cop3530::SSLL<element>::peek_front() {
     return head->data;
 }
 
-template <class element>
+template <typename element>
 //Returns if the List is full
 bool cop3530::SSLL<element>::is_full() {
     return (length() == max_size ? true : false);
 }
 
-template <class element>
+template <typename element>
 //Returns if the List is empty
 bool cop3530::SSLL<element>::is_empty() {
     return (head == NULL && tail == NULL ? true : false);
 }
 
-template <class element>
+template <typename element>
 //Returns the length of the current lsit
 size_t cop3530::SSLL<element>::length() {
     if (!is_empty()) {
@@ -352,13 +358,13 @@ size_t cop3530::SSLL<element>::length() {
 
 }
 
-template <class element>
+template <typename element>
 //Clears the list
 void cop3530::SSLL<element>::clear() {
     head = NULL;
     tail = NULL;
 }
-template <class element>
+template <typename element>
 void cop3530::SSLL<element>::shitPrint() {
     Node * temp = head;
     while (temp) {
@@ -368,7 +374,7 @@ void cop3530::SSLL<element>::shitPrint() {
     std::cout << std::endl;
 }
 
-template <class element>
+template <typename element>
 //Prints all of the elements
 std::ostream& cop3530::SSLL<element>::print (std::ostream& out) {
     if (is_empty())
@@ -390,7 +396,7 @@ std::ostream& cop3530::SSLL<element>::print (std::ostream& out) {
     return out;
 }
 
-template <class element>
+template <typename element>
 //Returns the contents of the list
 element * cop3530::SSLL<element>::contents() {
     if (is_empty())
@@ -406,7 +412,7 @@ element * cop3530::SSLL<element>::contents() {
     return values;
 }
 
-template <class element>
+template <typename element>
 //See if the list contains a certain element through a function pointer to make sure it is the exact element
 bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
     if (is_empty())
@@ -422,11 +428,5 @@ bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (
 
     return false;
 
-} ///DUNNO?~!
-template <class element>
-//Equals function that compares two elements
-bool cop3530::SSLL<element>::equals (element a, element b) {
-    return a == b;
 }
-
 #endif // SSLL_H
