@@ -71,17 +71,16 @@ template <typename DataT>
 
             private:
                 Node * here;
-                pointer * pointer_here;
-
+                pointer here_list;
             public:
                 //Points to here
-                explicit CDAL_Iter(Node * start = nullptr, pointer pointer_start = nullptr) : here (start), pointer_here (pointer_start) {}
+                explicit CDAL_Iter(Node * start = nullptr, pointer start_pointer = nullptr) : here (start), here_list (start_pointer) {}
                 CDAL_Iter (const CDAL_Iter& src) : here (src.here) {}
 
-                reference operator*() const {return *pointer_here;}
-                reference operator->() const {return pointer_here;}
+                reference operator*() const {return *(here_list);}
+                reference operator->() const {return here_list;}
                 //Equals sign operator
-                self_reference operator = (CDAL_Iter<DataT> const& src) {
+                self_reference operator=(CDAL_Iter<DataT> const& src) {
                     if (this == &src)
                         return *this;
                     here = src.here;
@@ -89,33 +88,27 @@ template <typename DataT>
                 }
                 //Pre-increment operator
                 self_reference operator++() {
-                    if (here != nullptr) {
-                        if (pointer_here != nullptr)
-                            ++pointer_here;
-                        else {
+                    if (here_list != nullptr && here != nullptr) {
+                        here_list++; ///CHECK IF SWITCHING
+                        if (here_list == nullptr) {
                             here = here->next;
-                            pointer_here = here->list;
+                            here_list = here->list;
                         }
                         return *this;
                     }
                 }
                 //Post-increment operator
                 self_type operator++(int) {
-                    if (here != nullptr) {
-                        self_type temp(*this);
-                        if (pointer_here != nullptr) {
-                            ++pointer_here;
-                        }
-                        else {
-                            here = here->next;
-                            pointer_here = here->list;
-                        }
+                    if (here->list != nullptr && here != nullptr) {
+                        self_reference temp(*this);
+                        here_list++;
                         return temp;
                     }
+
                 }
 
-                bool operator==(CDAL_Iter<DataT> const& rhs) const {return pointer_here == rhs.pointer_here;}
-                bool operator!=(CDAL_Iter<DataT> const& rhs) const {return pointer_here != rhs.pointer_here;}
+                bool operator==(CDAL_Iter<DataT> const& rhs) const {return here_list == rhs.here_list;}
+                bool operator!=(CDAL_Iter<DataT> const& rhs) const {return here_list != rhs.here_list;}
 
         };
 
@@ -125,24 +118,36 @@ template <typename DataT>
         using iterator = CDAL_Iter<element>;
         using const_iterator = CDAL_Iter<element const>;
         //Iterator begin and end functions
-        iterator begin () {return iterator(data);}
+        iterator begin () {return iterator(data, data->list);}
         iterator end () {
             Node * temp = data;
             while (temp->next)
                 temp = temp->next;
-            while (temp->list)
-                temp->list++;
-            return iterator(temp);
+
+            element * temp_tail = temp->list;
+            int temp_counter = tail;
+            while (temp_counter >= 0) {
+                temp_tail++;
+                temp_counter--;
+            }
+
+            return iterator(temp, temp_tail);
         }
 
-        const_iterator begin() const {return const_iterator(data->list);}
+        const_iterator begin() const {return iterator(data, data->list);}
         const_iterator end() const {
             Node * temp = data;
             while (temp->next)
                 temp = temp->next;
-            while (temp->list)
-                temp->list++;
-            return const_iterator(temp);
+
+            element * temp_tail = temp->list;
+            int temp_counter = tail;
+            while (temp_counter >= 0) {
+                temp_tail++;
+                temp_counter--;
+            }
+
+            return iterator(temp, temp_tail);
         }
 };
 }

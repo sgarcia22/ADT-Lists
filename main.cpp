@@ -11,12 +11,9 @@ using namespace cop3530;
 int main()
 {
     ///SDAL
-    cop3530::SDAL<int> * list4 = new cop3530::SDAL<int> (5);
-    list4->push_back(5);
-    list4->push_back(3);
-    list4->push_front(4);
-    list4->push_front(4);
-    list4->push_front(4);
+    cop3530::SDAL<int> * list4 = new cop3530::SDAL<int> (51);
+    for (int i = 1 ; i <= 51; ++i)
+        list4->push_back(i);
 
     int index4 = 0;
     for (cop3530::SDAL<int>::iterator i = list4->begin(); i != list4->end(); ++i) {
@@ -28,15 +25,13 @@ int main()
 //    cop3530::SSLL<int> * ssll = new cop3530::SSLL<int> (100);
 //ssll->push_back(5);
    // cout << ssll->contains(5);
-
   cout << "\n--------------SSAL ----------------\n";
+
     ///SSAL
-    cop3530::SSLL<int> * list = new cop3530::SSLL<int> (5);
-    list->push_back(5);
-    list->push_back(3);
-    list->push_front(4);
-    list->push_front(4);
-    list->push_front(4);
+    cop3530::SSLL<int> * list = new cop3530::SSLL<int> (51);
+    ///ERROR --- FIX
+    for (int i = 1 ; i <= 51; ++i)
+        list4->push_back(i);
 
    int index = 0;
 
@@ -48,12 +43,9 @@ int main()
 
       ///PSLL
       cout << "\n--------------PSLL ----------------\n";
-    cop3530::PSLL<int> * list2 = new cop3530::PSLL<int> (5);
-    list2->push_back(5);
-    list2->push_back(3);
-    list2->push_front(4);
-    list2->push_front(4);
-    list2->push_front(4);
+    cop3530::PSLL<int> * list2 = new cop3530::PSLL<int> (51);
+    for (int i = 1 ; i <= 51; ++i)
+        list2->push_back(i);
 
    int index2 = 0;
 
@@ -66,14 +58,11 @@ int main()
     ///CDAL
       cout << "\n--------------CDAL ----------------\n";
     cop3530::CDAL<int> * list3 = new cop3530::CDAL<int> ();
-     list3->push_back(5);
-    list3->push_back(3);
-    list3->push_front(4);
-    list3->push_front(4);
-    list3->push_front(4);
+       for (int i = 1 ; i <= 51; ++i)
+        list3->push_back(i);
 
-  //  list3->shitPrint();
    int index3 = 0;
+    ///KINDA FREAKS OUT AFTER A WHILE --- FIX
     for (cop3530::CDAL<int>::iterator i = list3->begin(); i != list3->end(); ++i) {
         std::cout << *i << "  ";
         index3++;
