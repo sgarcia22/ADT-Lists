@@ -10,21 +10,71 @@ using namespace cop3530;
 
 int main()
 {
+     cout << "\n--------------SDAL ----------------\n";
+    ///SDAL
+    cop3530::SDAL<int> * list4 = new cop3530::SDAL<int> (101);
+    for (int i = 1 ; i <= 101; ++i)
+        list4->push_back(i);
+
+    int index4 = 0;
+    for (cop3530::SDAL<int>::iterator i = list4->begin(); i != list4->end(); ++i) {
+        std::cout << *i << "  ";
+        index4++;
+    }
+    cout << "\n INDEX: " << index4 << endl;
     ///CONTENT
 //    cop3530::SSLL<int> * ssll = new cop3530::SSLL<int> (100);
 //ssll->push_back(5);
    // cout << ssll->contains(5);
+  cout << "\n--------------SSLL ----------------\n";
 
+    ///SSLL
+    cop3530::SSLL<int> * list = new cop3530::SSLL<int> (101);
+    ///ERROR --- FIX
+    for (int i = 1 ; i <= 101; ++i)
+        list->push_back(i);
 
-    ///SSAL
-    cop3530::SSLL<int> * list = new cop3530::SSLL<int> (5);
-    list->push_back(5);
-    list->push_back(3);
-    list->push_front(4);
-    list->shitPrint();
-
-    for (SSLL<int>::iterator i = list->begin(); i != list->end(); i++)
+   int index = 0;
+   // cop3530::SSLL<int>::iterator i = list->begin();
+//    cout << *i << endl;
+    for (cop3530::SSLL<int>::iterator i = list->begin(); i != list->end(); ++i) {
         std::cout << *i << "  ";
+        index++;
+    }
+    cout << "\n INDEX: " << index << endl;
+
+      ///PSLL
+      cout << "\n--------------PSLL ----------------\n";
+    cop3530::PSLL<int> * list2 = new cop3530::PSLL<int> (101);
+    for (int i = 1 ; i <= 101; ++i)
+        list2->push_back(i);
+
+   int index2 = 0;
+
+    for (cop3530::PSLL<int>::iterator i = list2->begin(); i != list2->end(); ++i) {
+        std::cout << *i << "  ";
+        index2++;
+    }
+    cout << "\n INDEX: " << index2 << endl;
+
+    ///CDAL
+      cout << "\n--------------CDAL ----------------\n";
+    cop3530::CDAL<int> * list3 = new cop3530::CDAL<int> ();
+       for (int i = 1 ; i <= 101; ++i)
+        list3->push_back(i);
+
+   int index3 = 0;
+    ///KINDA FREAKS OUT AFTER A WHILE --- FIX
+    cop3530::CDAL<int>::iterator i = list3->begin();
+    for (; index3 < 101; ++index3, ++i) {
+         std::cout << *i << "  ";
+    }
+    /*for (cop3530::CDAL<int>::iterator i = list3->begin(); i != list3->end(); ++i) {
+        std::cout << *i << "  ";
+        index3++;
+    }*/
+   cout << "\n INDEX: " << index3 << endl;
+
 
    // list->test = &(list->equals);
   //  list->contains(5, list->test);

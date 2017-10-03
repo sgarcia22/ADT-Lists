@@ -6,7 +6,7 @@
 
 namespace cop3530 {
 
-template <class element>
+template <typename element>
 
 class CDAL : public ADT<element>
 {
@@ -51,10 +51,117 @@ class CDAL : public ADT<element>
         //Keeps track of the number of unused arrays
         int unused_arrays = 0;
 
+    public:
+
+template <typename DataT>
+        class CDAL_Iter {
+
+            public:
+                //Iterator Compatibility
+                using iterator_category = std::forward_iterator_tag;
+                using iterator_category_const = const std::forward_iterator_tag;
+                using value_type = DataT;
+                using reference = DataT&;
+                using pointer = DataT*;
+                using difference_type = std::ptrdiff_t;
+
+                //Type aliases
+                using self_type = CDAL_Iter;
+                using self_reference = CDAL_Iter&;
+
+            private:
+                Node * here;
+                pointer here_list;
+                int temp_tail;
+            public:
+                //Points to here
+                explicit CDAL_Iter(Node * start = nullptr, pointer start_pointer = nullptr) : here (start), here_list (start_pointer), temp_tail (0) {}
+                CDAL_Iter (const CDAL_Iter& src) : here (src.here) {}
+
+                reference operator*() const {return *(here_list);}
+                reference operator->() const {return here_list;}
+                //Equals sign operator
+                self_reference operator=(CDAL_Iter<DataT> const& src) {
+                    if (this == &src)
+                        return *this;
+                    here = src.here;
+                    return *this;
+                }
+                //Pre-increment operator
+                self_reference operator++() {
+                    if (here_list != nullptr && here != nullptr) {
+                        here_list++;
+                        temp_tail++;
+                        if (temp_tail == 50) {
+                            here = here->next;
+                            here_list = here->list;
+                            temp_tail = 0;
+                        }
+                        return *this;
+                    }
+                }
+                //Post-increment operator
+                self_type operator++(int) {
+                    if (here_list != nullptr && here != nullptr) {
+                        self_reference temp(*this);
+                        here_list++;
+                        temp_tail++;
+                        if (temp_tail == 50) {
+                            here = here->next;
+                            here_list = here->list;
+                            temp_tail = 0;
+                        }
+                        return temp;
+                    }
+
+                }
+
+                bool operator==(CDAL_Iter<DataT> const& rhs) const {return here_list == rhs.here_list;}
+                bool operator!=(CDAL_Iter<DataT> const& rhs) const {return here_list != rhs.here_list;}
+
+        };
+
+        //Iterator Implementation
+        using size_t = std::size_t;
+        using value_type = element;
+        using iterator = CDAL_Iter<element>;
+        using const_iterator = CDAL_Iter<element const>;
+        //Iterator begin and end functions
+        iterator begin () {return iterator(data, data->list);}
+        iterator end () {
+            Node * temp = data;
+            while (temp->next)
+                temp = temp->next;
+
+            element * temp_tail = temp->list;
+            int temp_counter = tail;
+            while (temp_counter >= 0) {
+                temp_tail++;
+                temp_counter--;
+            }
+
+            return iterator(temp, temp_tail);
+        }
+
+        const_iterator begin() const {return iterator(data, data->list);}
+        const_iterator end() const {
+            Node * temp = data;
+            while (temp->next)
+                temp = temp->next;
+
+            element * temp_tail = temp->list;
+            int temp_counter = tail;
+            while (temp_counter >= 0) {
+                temp_tail++;
+                temp_counter--;
+            }
+
+            return iterator(temp, temp_tail);
+        }
 };
 }
 
-template <class element>
+template <typename element>
 //Constructor, initializes one node and its array with 50 slots
 cop3530::CDAL<element>::CDAL() {
     data = new Node();
@@ -62,7 +169,7 @@ cop3530::CDAL<element>::CDAL() {
     tail = -1;
     data->next = NULL;
 }
-template <class element>
+template <typename element>
 //Destructor, traverses through each node and deletes its array
 cop3530::CDAL<element>::~CDAL() {
     //Delete each array in each Node and it's respective Node
@@ -75,7 +182,7 @@ cop3530::CDAL<element>::~CDAL() {
     delete temp;
     delete data;
 }
-template <class element>
+template <typename element>
 //Inserts element at a certain position
 void cop3530::CDAL<element>::insert(element object, int position) {
   //If the list is full allocate a new Node with an array that fits 50 items
@@ -104,7 +211,7 @@ void cop3530::CDAL<element>::insert(element object, int position) {
     }
 
 }
-template <class element>
+template <typename element>
 //Inserts element at the back of the list
 void cop3530::CDAL<element>::push_back (element object) {
     //If the list is full allocate a new Node with an array that fits 50 items
@@ -128,7 +235,7 @@ void cop3530::CDAL<element>::push_back (element object) {
     }
 
 }
-template <class element>
+template <typename element>
 //Inserts element at the front of the list
 void cop3530::CDAL<element>::push_front (element object) {
     //If the list is full allocate a new Node with an array that fits 50 items
@@ -183,7 +290,7 @@ void cop3530::CDAL<element>::push_front (element object) {
     }
 
 }
-template <class element>
+template <typename element>
 //Replaces an element at the specified index
 void cop3530::CDAL<element>::replace (element object, int position) {
     if (is_empty())
@@ -204,7 +311,7 @@ void cop3530::CDAL<element>::replace (element object, int position) {
         }
     }
 }
-template <class element>
+template <typename element>
 //Removes an element at the specified position and moves all the succeeding elements up the list by one
 void cop3530::CDAL<element>::remove (int position) {
     if (is_empty())
@@ -247,7 +354,7 @@ void cop3530::CDAL<element>::remove (int position) {
     //Deallocate unused arrays if condition holds
     deallocate_old();
 }
-template <class element>
+template <typename element>
 //Removes and returns an element from the back of the list
 element cop3530::CDAL<element>::pop_back () {
     if (is_empty())
@@ -275,7 +382,7 @@ element cop3530::CDAL<element>::pop_back () {
     return last;
 
 }
-template <class element>
+template <typename element>
 //Removes and returns an element from the front of the list, moving all the succeeding element up the list by one
 element cop3530::CDAL<element>::pop_front () {
     if (is_empty())
@@ -310,7 +417,7 @@ element cop3530::CDAL<element>::pop_front () {
     deallocate_old();
     return front;
 }
-template <class element>
+template <typename element>
 //Returns the item at the specified index
 element cop3530::CDAL<element>::item_at (int position) {
     if (is_empty())
@@ -330,7 +437,7 @@ element cop3530::CDAL<element>::item_at (int position) {
     }
 
 }
-template <class element>
+template <typename element>
 //Returns the element at the back of the list
 element cop3530::CDAL<element>::peek_back () {
     if (is_empty())
@@ -343,24 +450,24 @@ element cop3530::CDAL<element>::peek_back () {
         temp = temp->next;
     }
 }
-template <class element>
+template <typename element>
 //Returns the element at the front of the list
 element cop3530::CDAL<element>::peek_front () {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot peek front.\n ");
     return data->list[0];
 }
-template <class element>
+template <typename element>
 //Returns whether the list is empty
 bool cop3530::CDAL<element>::is_empty () {
     return (tail == -1 && !(data->next));
 }
-template <class element>
+template <typename element>
 //Returns whether the list is full
 bool cop3530::CDAL<element>::is_full () {
     return (tail + 1 == array_size);
 }
-template <class element>
+template <typename element>
 //Returns the length of the elements in the list
 size_t cop3530::CDAL<element>::length () {
     int len = 0;
@@ -382,7 +489,7 @@ size_t cop3530::CDAL<element>::length () {
     } */
     return len;
 }
-template <class element>
+template <typename element>
 //Clears the array of all its values
 void cop3530::CDAL<element>::clear () {
     //Delete each array in each Node and it's respective Node
@@ -396,7 +503,7 @@ void cop3530::CDAL<element>::clear () {
     unused_arrays = 0;
 }
 ///ERASE
-template <class element>
+template <typename element>
 
 void cop3530::CDAL<element>::shitPrint() {
     Node * temp = data;
@@ -410,7 +517,7 @@ void cop3530::CDAL<element>::shitPrint() {
     }
     std::cout << std::endl;
 }
-template <class element>
+template <typename element>
 //Returns whether the list contains the specified value
 bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
     if (is_empty())
@@ -432,13 +539,13 @@ bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (
     }
     return false;
 }
-template <class element>
+template <typename element>
 //Returns whether two elements are equal
 bool cop3530::CDAL<element>::equals(element a, element b) {
     return (a == b ? true : false);
 }
 
-template <class element>
+template <typename element>
 //Prints out the contents of the list to the ostream
 std::ostream& cop3530::CDAL<element>::print (std::ostream& out) {
     if (is_empty())
@@ -457,7 +564,7 @@ std::ostream& cop3530::CDAL<element>::print (std::ostream& out) {
     }
     return out;
 }
-template <class element>
+template <typename element>
 //Returns the contents of the list
 element * cop3530::CDAL<element>::contents() {
     if (is_empty())
@@ -479,7 +586,7 @@ element * cop3530::CDAL<element>::contents() {
     }
     return values;
 }
-template <class element>
+template <typename element>
 //Allocates a new array is full
 void cop3530::CDAL<element>::allocate_new(){
     Node * new_node = new Node();
@@ -493,7 +600,7 @@ void cop3530::CDAL<element>::allocate_new(){
         curr = curr->next;
     }
 }
-template <class element>
+template <typename element>
 //Deallocated half the arrays when more than half are unused
 void cop3530::CDAL<element>::deallocate_old() {
     size_t total_arrays = 0;

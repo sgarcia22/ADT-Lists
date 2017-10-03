@@ -9,13 +9,14 @@
 #include <stdexcept>
 #include <limits>
 
-template <class element>
+template <typename element>
 
+//For the contains function
 bool equals(element a, element b) {
     return a == b;
 }
 
-template <class element>
+template <typename element>
 
 bool test_int_passed(cop3530::ADT<element> * test_case_1) {
 
@@ -25,7 +26,7 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     if (test_case_1->item_at(100) != 100 || test_case_1->item_at(1) != 1) return false;
     if (!(test_case_1->is_full()) || test_case_1->is_empty()) return false;
     if (test_case_1->length() != 100) return false;
-    //Should through a runtime exception for all classes except CDAL and SDAL which allocates more memory
+    //Should through a runtime exception for all typenamees except CDAL and SDAL which allocates more memory
     if (dynamic_cast<cop3530::CDAL<element> *>(test_case_1) == nullptr && dynamic_cast<cop3530::SDAL<element> *>(test_case_1) == nullptr) {
         try {
             test_case_1->push_back(101);

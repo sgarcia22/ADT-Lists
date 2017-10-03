@@ -6,7 +6,7 @@
 ///DEALLOCATE SHIT
 namespace cop3530 {
 
-template <class element>
+template <typename element>
 
 class PSLL : public ADT<element>
 {
@@ -47,10 +47,76 @@ class PSLL : public ADT<element>
         Node * poolHead;
         size_t pool_size;
 
+    public:
+
+        template <typename DataT>
+        class PSLL_Iter {
+            public:
+                //Iterator Compatibility
+                using iterator_category = std::forward_iterator_tag;
+                using iterator_category_const = const std::forward_iterator_tag;
+                using value_type = element;
+                using reference = element&;
+                using pointer = element*;
+                using difference_type = std::ptrdiff_t;
+
+                //Type aliases
+                using self_type = PSLL_Iter;
+                using self_reference = PSLL_Iter&;
+
+            private:
+                Node * here;
+            public:
+                //Points to here
+                explicit PSLL_Iter(Node * start = nullptr) : here (start) {}
+                PSLL_Iter (const PSLL_Iter& src) : here (src.here) {}
+
+                reference operator*() const {return here->data;}
+                reference operator->() const {return here;}
+                //Equals sign operator
+                self_reference operator=(PSLL_Iter<DataT> const& src) {
+                    if (this == &src)
+                        return *this;
+                    here = src.here;
+                    return *this;
+                }
+                //Pre-increment operator
+                self_reference operator++() {
+                    if (here != nullptr) {
+                        here = here->next;
+                        return *this;
+                    }
+                }
+                //Post-increment operator
+                self_reference operator++(int) {
+                    if (here != nullptr) {
+                        self_type temp(*this);
+                        here = here->next;
+                        return temp;
+                    }
+                }
+
+                bool operator==(PSLL_Iter<DataT> const& rhs) const {return here == rhs.here;}
+                bool operator!=(PSLL_Iter<DataT> const& rhs) const {return here != rhs.here;}
+
+        };
+
+        //Iterator Implementation
+        using size_t = std::size_t;
+        using value_type = element;
+        using iterator = PSLL_Iter<element>;
+        using const_iterator = PSLL_Iter<element const>;
+        //Iterator begin and end functions
+        iterator begin () {return iterator(head);}
+        iterator end () {return iterator(tail->next);}
+
+        const_iterator begin () const {return const_iterator(head);}
+        const_iterator end () const {return const_iterator(tail->next);}
+
 };
 }
 
-template <class element>
+template <typename element>
 //Constructor, initialize Nodes
 cop3530::PSLL<element>::PSLL(size_t size) {
     //Set head and tail equal to null
@@ -82,7 +148,7 @@ cop3530::PSLL<element>::PSLL(size_t size) {
 
 }
 
-template <class element>
+template <typename element>
 //Deallocate free Nodes
 cop3530::PSLL<element>::~PSLL() {
     for (int i = 0; i < pool_size; ++i) {
@@ -94,7 +160,7 @@ cop3530::PSLL<element>::~PSLL() {
     delete [] pool;
 }
 
-template <class element>
+template <typename element>
 //Pushes an element to the front
 void cop3530::PSLL<element>::push_front(element object) {
 
@@ -124,7 +190,7 @@ void cop3530::PSLL<element>::push_front(element object) {
 
 }
 
-template <class element>
+template <typename element>
 //Pushes an element to the back
 void cop3530::PSLL<element>::push_back(element object) {
 
@@ -153,7 +219,7 @@ void cop3530::PSLL<element>::push_back(element object) {
 
 }
 
-template <class element>
+template <typename element>
 //Inserts an element at the specified position
 void cop3530::PSLL<element>::insert(element object, int position) {
     if (is_full())
@@ -189,7 +255,7 @@ void cop3530::PSLL<element>::insert(element object, int position) {
     deallocateNodes();
 }
 
-template <class element>
+template <typename element>
 //Replaces an element at the specified position
 void cop3530::PSLL<element>::replace(element object, int position) {
     if (is_empty())
@@ -208,7 +274,7 @@ void cop3530::PSLL<element>::replace(element object, int position) {
     }
 }
 
-template <class element>
+template <typename element>
 //Removes an element at the specified position and adds that removed node to the pool list
 void cop3530::PSLL<element>::remove(int position) {
     if (is_empty())
@@ -239,7 +305,7 @@ void cop3530::PSLL<element>::remove(int position) {
     }
 }
 
-template <class element>
+template <typename element>
 //Returns the item at a specified position
 element cop3530::PSLL<element>::item_at(int position) {
     if (position > length())
@@ -256,7 +322,7 @@ element cop3530::PSLL<element>::item_at(int position) {
     }
 }
 
-template <class element>
+template <typename element>
 //Removes and returns the last element
 element cop3530::PSLL<element>::pop_back() {
     if (is_empty())
@@ -284,7 +350,7 @@ element cop3530::PSLL<element>::pop_back() {
     return temp;
 }
 
-template <class element>
+template <typename element>
 //Returns the last element
 element cop3530::PSLL<element>::peek_back() {
     if (is_empty())
@@ -292,7 +358,7 @@ element cop3530::PSLL<element>::peek_back() {
     return tail->data;
 }
 
-template <class element>
+template <typename element>
 //Removes and returns the first element and adds the removed node to the pool
 element cop3530::PSLL<element>::pop_front() {
     if (is_empty())
@@ -313,7 +379,7 @@ element cop3530::PSLL<element>::pop_front() {
     return frontItem;
 }
 
-template <class element>
+template <typename element>
 //Returns the first element
 element cop3530::PSLL<element>::peek_front() {
     if (is_empty())
@@ -321,19 +387,19 @@ element cop3530::PSLL<element>::peek_front() {
     return head->data;
 }
 
-template <class element>
+template <typename element>
 //Returns if the List is full
 bool cop3530::PSLL<element>::is_full() {
     return (length() == pool_size ? true : false);
 }
 
-template <class element>
+template <typename element>
 //Returns if the List is empty
 bool cop3530::PSLL<element>::is_empty() {
     return (head == NULL && tail == NULL ? true : false);
 }
 
-template <class element>
+template <typename element>
 //Returns the length of the current lsit
 size_t cop3530::PSLL<element>::length() {
     if (!is_empty()) {
@@ -350,7 +416,7 @@ size_t cop3530::PSLL<element>::length() {
 
 }
 
-template <class element>
+template <typename element>
 //Clears the list
 void cop3530::PSLL<element>::clear() {
     for (int i = 0; i < pool_size; ++i) {
@@ -381,7 +447,7 @@ void cop3530::PSLL<element>::clear() {
 
 }
 ///REMOVE
-template <class element>
+template <typename element>
 void cop3530::PSLL<element>::shitPrint() {
     Node * temp = head;
     while (temp) {
@@ -391,7 +457,7 @@ void cop3530::PSLL<element>::shitPrint() {
     std::cout << std::endl;
 }
 ///REMOVE
-template <class element>
+template <typename element>
 void cop3530::PSLL<element>::poolPrint() {
     int howMany = 0;
     Node * temp = new Node();
@@ -407,7 +473,7 @@ void cop3530::PSLL<element>::poolPrint() {
 }
 
 
-template <class element>
+template <typename element>
 //Prints all of the elements
 std::ostream& cop3530::PSLL<element>::print (std::ostream& out) {
     if (is_empty())
@@ -429,7 +495,7 @@ std::ostream& cop3530::PSLL<element>::print (std::ostream& out) {
     return out;
 }
 
-template <class element>
+template <typename element>
 //Returns the contents of the list
 element * cop3530::PSLL<element>::contents() {
     if (is_empty())
@@ -445,7 +511,7 @@ element * cop3530::PSLL<element>::contents() {
     return values;
 }
 
-template <class element>
+template <typename element>
 //See if the list contains a certain element with the matching type
 bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
     if (is_empty())
@@ -460,7 +526,7 @@ bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (
     return false;
 }
 
-template <class element>
+template <typename element>
 //Deallocates free Nodes that are not being used
 void cop3530::PSLL<element>::deallocateNodes() {
     if (length() >= 100 && ((pool_size - length()) > (length() / 2))) {
