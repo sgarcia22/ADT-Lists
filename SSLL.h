@@ -75,7 +75,7 @@ class SSLL : public ADT<element>
                 reference operator*() const {return here->data;}
                 reference operator->() const {return here;}
                 //Equals sign operator
-                self_reference operator = (SSLL_Iter<DataT> const& src) {
+                self_reference operator=(SSLL_Iter<DataT> const& src) {
                     if (this == &src)
                         return *this;
                     here = src.here;

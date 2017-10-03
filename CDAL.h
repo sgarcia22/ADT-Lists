@@ -72,9 +72,10 @@ template <typename DataT>
             private:
                 Node * here;
                 pointer here_list;
+                int temp_tail;
             public:
                 //Points to here
-                explicit CDAL_Iter(Node * start = nullptr, pointer start_pointer = nullptr) : here (start), here_list (start_pointer) {}
+                explicit CDAL_Iter(Node * start = nullptr, pointer start_pointer = nullptr) : here (start), here_list (start_pointer), temp_tail (0) {}
                 CDAL_Iter (const CDAL_Iter& src) : here (src.here) {}
 
                 reference operator*() const {return *(here_list);}
@@ -89,19 +90,27 @@ template <typename DataT>
                 //Pre-increment operator
                 self_reference operator++() {
                     if (here_list != nullptr && here != nullptr) {
-                        here_list++; ///CHECK IF SWITCHING
-                        if (here_list == nullptr) {
+                        here_list++;
+                        temp_tail++;
+                        if (temp_tail == 50) {
                             here = here->next;
                             here_list = here->list;
+                            temp_tail = 0;
                         }
                         return *this;
                     }
                 }
                 //Post-increment operator
                 self_type operator++(int) {
-                    if (here->list != nullptr && here != nullptr) {
+                    if (here_list != nullptr && here != nullptr) {
                         self_reference temp(*this);
                         here_list++;
+                        temp_tail++;
+                        if (temp_tail == 50) {
+                            here = here->next;
+                            here_list = here->list;
+                            temp_tail = 0;
+                        }
                         return temp;
                     }
 

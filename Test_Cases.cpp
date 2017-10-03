@@ -11,6 +11,7 @@
 
 template <typename element>
 
+//For the contains function
 bool equals(element a, element b) {
     return a == b;
 }
