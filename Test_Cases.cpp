@@ -177,9 +177,9 @@ bool test_ssll_iterator () {
         if (temp_contents[index] != *i) return false;
         ++index;
     }
-    ///NOT WORKING
-    //ssll_list->insert(30, 51);
+
     ssll_list->remove(9);
+    ssll_list->insert(30, 51);
     ssll_list->pop_back();
     ssll_list->pop_front();
 
@@ -207,9 +207,9 @@ bool test_psll_iterator () {
         if (temp_contents[index] != *i) return false;
         ++index;
     }
-    ///NOT WORKING
-    //psll_list->insert(30, 51);
+
     psll_list->remove(9);
+    psll_list->insert(30, 51);
     psll_list->pop_back();
     psll_list->pop_front();
 
@@ -224,7 +224,7 @@ bool test_psll_iterator () {
     return true;
 
 }
-bool test_sdal_iterator () { ///GOOD
+bool test_sdal_iterator () {
 
     cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> (100);
     for (int i = 1; i <= 100; ++i)
@@ -254,33 +254,26 @@ bool test_sdal_iterator () { ///GOOD
     return true;
 
 }
+///The first iterator wasn't working -> the accessing elements from contents()
 bool test_cdal_iterator () {
 
     cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
-    for (int i = 1; i <= 100; ++i)
+   for (int i = 1; i <= 100; ++i)
         cdal_list->push_back(i);
 
-    int * temp_contents = cdal_list->contents();
-    int index = 0;
-
-    for (cop3530::CDAL<int>::iterator i = cdal_list->begin(); i != cdal_list->end(); ++i) {
-        if (temp_contents[index] != *i) return false;
-        ++index;
-    }
-    ///NOT WORKING AT ALL -> SEG DEFAULT
-    //cdal_list->insert(30, 51);
-    /*cdal_list->remove(9);
+    cdal_list->remove(9);
     cdal_list->pop_back();
     cdal_list->pop_front();
+    cdal_list->insert(30, 51);
 
-    temp_contents = cdal_list->contents();
-    index = 0;
+    int * temp_contents = cdal_list->contents();
+    int  index = 0;
 
     for (cop3530::CDAL<int>::iterator it = cdal_list->begin(); it != cdal_list->end(); ++it) {
         if (temp_contents[index] != *it) return false;
         ++index;
     }
-*/
+
     return true;
 
 }
