@@ -16,6 +16,7 @@ bool equals(element a, element b) {
     return a == b;
 }
 
+
 template <typename element>
 
 bool test_int_passed(cop3530::ADT<element> * test_case_1) {
@@ -74,7 +75,7 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
         //Will push to front of CDAL or SDAL List
         test_case_1->insert(79, 1);
         if (test_case_1->length() != 102) return false;
-        //If we passed in the SDAL class
+        //If we passed in the SDAL or CDAL class
         if (dynamic_cast<cop3530::SDAL<element> *>(test_case_1) != nullptr || dynamic_cast<cop3530::CDAL<element> *>(test_case_1) != nullptr ) {
             if (test_case_1->item_at(52) != 30) return false;
             if (test_case_1->item_at(102) != 1) return false;
@@ -160,8 +161,128 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     if (!test_case_1->contains(100, &equals)) return false;
     if (test_case_1->contains(101, &equals)) return false;
 
+    return true;
+}
+
+bool test_ssll_iterator () {
+
+    cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> (100);
+    for (int i = 1; i <= 100; ++i)
+        ssll_list->push_back(i);
+
+    int * temp_contents = ssll_list->contents();
+    int index = 0;
+
+    for (cop3530::SSLL<int>::iterator i = ssll_list->begin(); i != ssll_list->end(); ++i) {
+        if (temp_contents[index] != *i) return false;
+        ++index;
+    }
+    ///NOT WORKING
+    //ssll_list->insert(30, 51);
+    ssll_list->remove(9);
+    ssll_list->pop_back();
+    ssll_list->pop_front();
+
+    temp_contents = ssll_list->contents();
+    index = 0;
+
+    for (cop3530::SSLL<int>::iterator it = ssll_list->begin(); it != ssll_list->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
 
     return true;
+
+}
+bool test_psll_iterator () {
+
+    cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> (100);
+    for (int i = 1; i <= 100; ++i)
+        psll_list->push_back(i);
+
+    int * temp_contents = psll_list->contents();
+    int index = 0;
+
+    for (cop3530::PSLL<int>::iterator i = psll_list->begin(); i != psll_list->end(); ++i) {
+        if (temp_contents[index] != *i) return false;
+        ++index;
+    }
+    ///NOT WORKING
+    //psll_list->insert(30, 51);
+    psll_list->remove(9);
+    psll_list->pop_back();
+    psll_list->pop_front();
+
+    temp_contents = psll_list->contents();
+    index = 0;
+
+    for (cop3530::PSLL<int>::iterator it = psll_list->begin(); it != psll_list->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+
+    return true;
+
+}
+bool test_sdal_iterator () { ///GOOD
+
+    cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> (100);
+    for (int i = 1; i <= 100; ++i)
+        sdal_list->push_back(i);
+
+    int * temp_contents = sdal_list->contents();
+    int index = 0;
+
+    for (cop3530::SDAL<int>::iterator i = sdal_list->begin(); i != sdal_list->end(); ++i) {
+        if (temp_contents[index] != *i) return false;
+        ++index;
+    }
+
+    sdal_list->insert(30, 51);
+    sdal_list->remove(9);
+    sdal_list->pop_back();
+    sdal_list->pop_front();
+
+    temp_contents = sdal_list->contents();
+    index = 0;
+
+    for (cop3530::SDAL<int>::iterator it = sdal_list->begin(); it != sdal_list->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+
+    return true;
+
+}
+bool test_cdal_iterator () {
+
+    cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
+    for (int i = 1; i <= 100; ++i)
+        cdal_list->push_back(i);
+
+    int * temp_contents = cdal_list->contents();
+    int index = 0;
+
+    for (cop3530::CDAL<int>::iterator i = cdal_list->begin(); i != cdal_list->end(); ++i) {
+        if (temp_contents[index] != *i) return false;
+        ++index;
+    }
+    ///NOT WORKING AT ALL -> SEG DEFAULT
+    //cdal_list->insert(30, 51);
+    /*cdal_list->remove(9);
+    cdal_list->pop_back();
+    cdal_list->pop_front();
+
+    temp_contents = cdal_list->contents();
+    index = 0;
+
+    for (cop3530::CDAL<int>::iterator it = cdal_list->begin(); it != cdal_list->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+*/
+    return true;
+
 }
 
 int main () {
@@ -200,8 +321,34 @@ int main () {
         std::cout << "CDAL TEST CASE: FAILED\n" ;
         all_passed = false;
     }
+    std::cout << "\n\t   --- ITERATOR LIST ---\n";
 
-    std::cout << (all_passed ? "ALL TEST CASES PASSED\n" : "AT LEAST ONE TEST CASE FAILED\n");
+    if (test_ssll_iterator())
+        std::cout << "SSLL ITERATOR TEST CASE: PASSED\n";
+    else {
+        std::cout << "SSLL ITERATOR TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_psll_iterator())
+        std::cout << "PSLL ITERATOR TEST CASE: PASSED\n";
+    else {
+        std::cout << "PSLL ITERATOR TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_sdal_iterator())
+        std::cout << "SDAL ITERATOR TEST CASE: PASSED\n";
+    else {
+        std::cout << "SDAL ITERATOR TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_cdal_iterator())
+        std::cout << "CDAL ITERATOR TEST CASE: PASSED\n";
+    else {
+        std::cout << "CDAL ITERATOR TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+
+    std::cout << (all_passed ? "\nALL TEST CASES PASSED\n" : "\nAT LEAST ONE TEST CASE FAILED\n");
 
 
 

@@ -64,15 +64,15 @@ int main()
         list3->push_back(i);
 
    int index3 = 0;
-    ///KINDA FREAKS OUT AFTER A WHILE --- FIX
-    cop3530::CDAL<int>::iterator i = list3->begin();
+
+ /*   cop3530::CDAL<int>::iterator i = list3->begin();
     for (; index3 < 101; ++index3, ++i) {
          std::cout << *i << "  ";
-    }
-    /*for (cop3530::CDAL<int>::iterator i = list3->begin(); i != list3->end(); ++i) {
+    }*/
+    for (cop3530::CDAL<int>::iterator i = list3->begin(); i != list3->end(); ++i) {
         std::cout << *i << "  ";
         index3++;
-    }*/
+    }
    cout << "\n INDEX: " << index3 << endl;
 
 
