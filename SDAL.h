@@ -35,12 +35,11 @@ class SDAL : public ADT<element>
 
     private:
 
-        element * data;
         int tail;
         element * list;
         int max_size;
         //Keeps track of the initial size
-        int initial_size;
+        int const initial_size;
 
          public:
 
@@ -99,31 +98,29 @@ class SDAL : public ADT<element>
     using const_iterator = SDAL_Iter<element const>;
     //Iterator begin and end functions
     iterator begin () {return iterator(list);}
-    iterator end () {return iterator(list + tail + 1);}
+    iterator end () {return iterator(list + tail);}
 
-    const_iterator begin () const {return const_iterator(data);}
-    const_iterator end () const {return const_iterator(data + tail + 1);}
+    const_iterator begin () const {return const_iterator(list);}
+    const_iterator end () const {return const_iterator(list + tail);}
 
 };
 }
 
 template <typename element>
 //Constructor, initializes array
-cop3530::SDAL<element>::SDAL(size_t inputSize) {
+cop3530::SDAL<element>::SDAL(size_t inputSize) : initial_size(inputSize) {
 
     max_size = inputSize;
-    initial_size = inputSize;
     //Setting tail to -1 because it is accessed through index
-    tail = -1;
-    list = new element [max_size];
-    data = list;
+    tail = 0;
+    list = new element [max_size + 1];
 
 }
+
 template <typename element>
 //Destructor, deallocates array and pointer
 cop3530::SDAL<element>::~SDAL() {
     delete [] list;
-    delete data;
 }
 template <typename element>
 //Inserts element at a certain position
@@ -154,8 +151,8 @@ template <typename element>
 void cop3530::SDAL<element>::push_back (element object) {
     if (is_full())
         allocate_new();
-    ++tail;
     list[tail] = object;
+    ++tail;
 }
 template <typename element>
 //Inserts element at the front of the list
@@ -197,8 +194,8 @@ template <typename element>
 //Removes and returns an element from the back of the list
 element cop3530::SDAL<element>::pop_back () {
     if (is_empty())
-        throw std::runtime_error ("The list is empty, cannot pop.\n ");
-    element temp = list[tail];
+        throw std::runtime_error ("The list is empty, cannot pop back.\n ");
+    element temp = list[tail - 1];
     --tail;
     allocate_new();
     return temp;
@@ -207,15 +204,15 @@ template <typename element>
 //Removes and returns an element from the front of the list, moving all the succeeding element up the list by one
 element cop3530::SDAL<element>::pop_front () {
     if (is_empty())
-        throw std::runtime_error ("The list is empty, cannot pop.\n ");
+        throw std::runtime_error ("The list is empty, cannot pop front.\n ");
     element temp = list[0];
     for (int i = 0; i < length(); ++i)
         list[i] = list[i + 1];
     tail--;
     allocate_new();
     return temp;
-
 }
+
 template <typename element>
 //Returns the item at the specified index
 element cop3530::SDAL<element>::item_at (int position) {
@@ -228,7 +225,7 @@ element cop3530::SDAL<element>::item_at (int position) {
 template <typename element>
 //Returns the element at the back of the list
 element cop3530::SDAL<element>::peek_back () {
-    return list[tail];
+    return list[tail - 1];
 }
 template <typename element>
 //Returns the element at the front of the list
@@ -238,25 +235,24 @@ element cop3530::SDAL<element>::peek_front () {
 template <typename element>
 //Returns whether the list is empty
 bool cop3530::SDAL<element>::is_empty () {
-    return (tail == -1);
+    return (!tail);
 }
 template <typename element>
 //Returns whether the list is full
 bool cop3530::SDAL<element>::is_full () {
-    return (tail + 1 == max_size);
+    return (tail == max_size);
 }
 template <typename element>
 //Returns the length of the elements in the list
 size_t cop3530::SDAL<element>::length () {
-    return tail + 1;
+    return tail;
 }
 template <typename element>
 //Clears the array of all its values
 void cop3530::SDAL<element>::clear () {
-    tail = -1;
+    tail = 0;
     delete [] list;
-    list = new element [initial_size];
-    data = list;
+    list = new element [initial_size + 1];
     max_size = initial_size;
 
 }
@@ -264,13 +260,13 @@ void cop3530::SDAL<element>::clear () {
 template <typename element>
 
 void cop3530::SDAL<element>::shitPrint() {
-    for (int i = 0; i < max_size; ++ i) {
+    for (int i = 0; i < tail; ++ i) {
         if (i + 1 > length())
             std::cout << 0 << "    ";
         else
             std::cout << list[i] << "   ";
     }
-    std::cout << "TAIL: " << tail << std::endl;
+    std::cout << "\nTAIL: " << tail << std::endl;
     std::cout << "SIZE: " << max_size << std::endl;
 }
 template <typename element>
@@ -308,31 +304,36 @@ template <typename element>
 element * cop3530::SDAL<element>::contents() {
     if (is_empty())
         throw std::runtime_error("The list is empty, there are no elements.\n ");
-    element * values = new element[length() - 1];
+    element * values = new element[length()];
     for (int i = 0; i < length(); ++i)
         values[i] = list[i];
     return values;
 }
-template <typename element>
+template <typename element> ///TEST
 //Allocate a new array is the current one is using too much or too little memory
 void cop3530::SDAL<element>::allocate_new() {
     if (is_full()) {
+
         int new_size = int(max_size  * 1.5 + 0.5);
-        element * temp = new element [new_size];
+        element * temp = new element [new_size + 1];
         for (int i = 0; i < max_size; ++i)
             temp[i] = list[i];
         delete [] list;
         list = temp;
+       // std::cout << "\nMAX SIZE: " << new_size << std::endl;
         max_size = new_size;
+
     }
-    if (max_size >= 100 && ((max_size / 2) > length())) {
+    if (max_size >= 2 * initial_size && ((max_size / 2) > length())) {
+
         int new_size = int(max_size  * .75 + 0.5);
-        element * temp = new element [new_size];
+        element * temp = new element [new_size + 1];
         for (int i = 0; i < new_size; ++i)
             temp[i] = list[i];
         delete [] list;
         list = temp;
         max_size = new_size;
+
     }
 }
 

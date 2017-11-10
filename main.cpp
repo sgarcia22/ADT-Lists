@@ -8,9 +8,15 @@
 using namespace std;
 using namespace cop3530;
 
+template <typename element>
+//For the contains function
+bool equals(element a, element b) {
+    return a == b;
+}
+
 int main()
 {
-     cout << "\n--------------SDAL ----------------\n";
+     /*cout << "\n--------------SDAL ----------------\n";
     ///SDAL
     cop3530::SDAL<int> * list4 = new cop3530::SDAL<int> (101);
     for (int i = 1 ; i <= 101; ++i)
@@ -42,11 +48,43 @@ int main()
         index++;
     }
     cout << "\n INDEX: " << index << endl;
-
-      ///PSLL
+*/
+   /*   ///PSLL
       cout << "\n--------------PSLL ----------------\n";
-    cop3530::PSLL<int> * list2 = new cop3530::PSLL<int> (101);
-    for (int i = 1 ; i <= 101; ++i)
+    cop3530::PSLL<int> * list2 = new cop3530::PSLL<int> (250);
+    for (int i = 1 ; i <= 200; ++i)
+        list2->push_front(i);
+    list2->shitPrint();
+    list2->poolPrint();
+
+     for (int i = 1 ; i <= 20; ++i)
+        list2->pop_back();
+     list2->shitPrint();
+     list2->poolPrint();*/
+  /*  for (int i = 1 ; i <= 10; ++i)
+        list2->push_front(i);
+    list2->shitPrint();
+    list2->insert(5, 5);
+   list2->shitPrint();
+    list2->replace(4, 5);
+    list2->shitPrint();
+        list2->poolPrint();
+    list2->remove(4);
+  list2->shitPrint();
+    list2->poolPrint();
+    list2->push_front(9);
+   list2->shitPrint();
+    list2->poolPrint(); ///FIX THE POOL -> PUSH FRONT AINT WORKING */
+
+   //  list2->shitPrint();
+   //  list2->poolPrint();
+
+  //   list2->shitPrint();
+  //  list2->poolPrint();
+
+   //  list2->shitPrint();
+   //  list2->poolPrint();
+   /* for (int i = 1 ; i <= 101; ++i)
         list2->push_back(i);
 
    int index2 = 0;
@@ -55,8 +93,8 @@ int main()
         std::cout << *i << "  ";
         index2++;
     }
-    cout << "\n INDEX: " << index2 << endl;
-
+    cout << "\n INDEX: " << index2 << endl;*/
+/*
     ///CDAL
       cout << "\n--------------CDAL ----------------\n";
     cop3530::CDAL<int> * list3 = new cop3530::CDAL<int> ();
@@ -65,15 +103,15 @@ int main()
 
    int index3 = 0;
 
- /*   cop3530::CDAL<int>::iterator i = list3->begin();
+    cop3530::CDAL<int>::iterator i = list3->begin();
     for (; index3 < 101; ++index3, ++i) {
          std::cout << *i << "  ";
-    }*/
+    }
     for (cop3530::CDAL<int>::iterator i = list3->begin(); i != list3->end(); ++i) {
         std::cout << *i << "  ";
         index3++;
     }
-   cout << "\n INDEX: " << index3 << endl;
+   cout << "\n INDEX: " << index3 << endl; */
 
 
    // list->test = &(list->equals);
@@ -346,6 +384,128 @@ cout << endl;
   //  list->pop_front();
  //   list->shitPrint();
     //cout << list->peek_front();
+
+/*    ///SDAL CHANGES
+    cout << "\n--------------SDAL ----------------\n";
+
+    cop3530::SDAL<int> * sdal_test = new cop3530::SDAL<int> (50);
+    for (int i = 0; i < 100; ++i)
+        sdal_test->push_front(i);
+    sdal_test->shitPrint();
+
+    for (int i = 0; i < 50; ++i)
+        sdal_test->pop_back();
+    sdal_test->shitPrint();
+   /* sdal_test->pop_back();
+    sdal_test->shitPrint();
+
+    sdal_test->pop_front();
+    sdal_test->shitPrint();*/
+
+    cout << "\n--------------CDAL ----------------\n";
+
+    int size = 0;
+
+    cop3530::CDAL<int> * cdal_test = new cop3530::CDAL<int> ();
+    for (int i = 0; i < 100; ++i)
+        cdal_test->push_front(i + 5);
+
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
+    cout<<endl;
+
+    //cdal_test->shitPrint();
+
+   /* cdal_test->insert(5, 100);
+    //cdal_test->shitPrint();
+
+    size = 0;
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
+    cout<<endl;
+    cdal_test->pop_back();
+    //cdal_test->shitPrint();
+*/
+
+/*
+ cdal_test->pop_back();
+//For the contains function
+bool equals(element a, element b) {
+    return a == b;
+}
+    std::cout << "\nTAIL: " << cdal_test->tail << "\n";
+
+    size = 0;
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
+    cout<<endl;*/
+    cout << "\n" << cdal_test->length() << endl;
+
+    cdal_test->pop_back();
+
+    std::cout << "\nTAIL: " << cdal_test->tail << "\n";
+
+    size = 0;
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
+    cout<<endl;
+
+    cout << "\nUNUSED ARRAYS: " << cdal_test->unused_arrays << "\n";
+
+
+ for (int i = 0; i < 10; ++i)
+        cdal_test->push_front(i + 5);
+
+    size = 0;
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
+    cout<<endl;
+
+    cdal_test->pop_front();
+ size = 0;
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
+    cout<<endl;
+
+    cout<< endl;
+    cout << cdal_test->peek_front() <<   endl;
+
+    cout << cdal_test->contains(5005, &equals) << endl;
+
+
+
+    cdal_test->remove(2);
+     size = 0;
+    for (cop3530::CDAL<int>::iterator it = cdal_test->begin(); it != cdal_test->end(); ++it) {
+        std::cout << *it << "  ";
+        ++size;
+        if (!(size % 50))
+            cout << endl;
+    }
 
     return 0;
 }

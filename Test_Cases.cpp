@@ -25,9 +25,9 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     for (int i = 0; i < 100; ++i, ++index)
         test_case_1->push_back(index);
     if (test_case_1->item_at(100) != 100 || test_case_1->item_at(1) != 1) return false;
-    if (!(test_case_1->is_full()) || test_case_1->is_empty()) return false;
+    if (test_case_1->is_empty()) return false;
     if (test_case_1->length() != 100) return false;
-    //Should through a runtime exception for all typenamees except CDAL and SDAL which allocates more memory
+    //Should through a runtime exception for all typenames except CDAL and SDAL which allocates more memory
     if (dynamic_cast<cop3530::CDAL<element> *>(test_case_1) == nullptr && dynamic_cast<cop3530::SDAL<element> *>(test_case_1) == nullptr) {
         try {
             test_case_1->push_back(101);
@@ -54,7 +54,7 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     for (int i = 0; i < 100; ++i, ++index)
         test_case_1->push_front(index);
     if (test_case_1->item_at(1) != 100 || test_case_1->item_at(100) != 1) return false;
-    if (!(test_case_1->is_full()) || test_case_1->is_empty()) return false;
+    if (test_case_1->is_empty()) return false;
     if (test_case_1->length() != 100) return false;
     //Testing the insert function
     if (dynamic_cast<cop3530::CDAL<element> *>(test_case_1) == nullptr && dynamic_cast<cop3530::SDAL<element> *>(test_case_1) == nullptr) {
@@ -90,7 +90,7 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     }
 
     test_case_1->replace(40, 10);
-    if (test_case_1->item_at(10) != 40) return false;
+   if (test_case_1->item_at(10) != 40) return false;
 
     if (test_case_1->peek_back() != 1) return false;
     test_case_1->pop_back();
@@ -108,6 +108,8 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     test_case_1->remove(9);
     if (test_case_1->length() != 97) return false;
     if (test_case_1->item_at(9) != 90) return false;
+
+
 
     //Checking Print Function
     test_case_1->clear();
@@ -136,8 +138,8 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     if (in_file_1.is_open()) {
         while(std::getline(in_file_1, output))
             std::cout << output;
-    }
-*/
+    } */
+
     //Checking contents Function
     element true_contents [5] = {1, 2, 3, 4, 5};
     element * list_contents = test_case_1->contents();
@@ -191,9 +193,19 @@ bool test_ssll_iterator () {
         ++index;
     }
 
+    cop3530::SSLL<int> const * ssll_list_const_iter = ssll_list;
+
+    index = 0;
+    for (cop3530::SSLL<int>::const_iterator it = ssll_list_const_iter->begin(); it != ssll_list_const_iter->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+
+
     return true;
 
 }
+
 bool test_psll_iterator () {
 
     cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> (100);
@@ -221,9 +233,18 @@ bool test_psll_iterator () {
         ++index;
     }
 
+    cop3530::PSLL<int> const * psll_list_const_iter = psll_list;
+
+    index = 0;
+    for (cop3530::PSLL<int>::const_iterator it = psll_list_const_iter->begin(); it != psll_list_const_iter->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+
     return true;
 
 }
+
 bool test_sdal_iterator () {
 
     cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> (100);
@@ -251,10 +272,18 @@ bool test_sdal_iterator () {
         ++index;
     }
 
+    cop3530::SDAL<int> const * sdal_list_const_iter = sdal_list;
+
+    index = 0;
+    for (cop3530::SDAL<int>::const_iterator it = sdal_list_const_iter->begin(); it != sdal_list_const_iter->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+
     return true;
 
 }
-///The first iterator wasn't working -> the accessing elements from contents()
+
 bool test_cdal_iterator () {
 
     cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
@@ -270,6 +299,15 @@ bool test_cdal_iterator () {
     int  index = 0;
 
     for (cop3530::CDAL<int>::iterator it = cdal_list->begin(); it != cdal_list->end(); ++it) {
+        if (temp_contents[index] != *it) return false;
+        ++index;
+    }
+
+
+    cop3530::CDAL<int> const * cdal_list_const_iter = cdal_list;
+
+    index = 0;
+    for (cop3530::CDAL<int>::const_iterator it = cdal_list_const_iter->begin(); it != cdal_list_const_iter->end(); ++it) {
         if (temp_contents[index] != *it) return false;
         ++index;
     }
