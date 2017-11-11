@@ -12,7 +12,12 @@ class CDAL : public ADT<element>
 {
     public:
         CDAL();
+        CDAL(const CDAL&);
+        CDAL& operator=(const CDAL&);
+        CDAL(CDAL &&s) noexcept;
+        CDAL& operator=(CDAL&&) noexcept;
         virtual ~CDAL();
+
         void insert(element object, int position) override;
         void push_back (element object) override;
         void push_front (element object) override;
@@ -45,15 +50,14 @@ class CDAL : public ADT<element>
             Node * next;
         };
         //Keeps track of the tail in any array
-        //int tail;
+        int tail;
         Node * data;
         const int array_size = 50;
         //Keeps track of the number of unused arrays
-        //int unused_arrays = 0;
+        int unused_arrays = 0;
 
     public:
-        int unused_arrays = 0;
-    int tail;
+
 template <typename DataT>
         class CDAL_Iter {
 
@@ -170,6 +174,44 @@ cop3530::CDAL<element>::CDAL() {
     tail = 0;
     data->next = NULL;
 }
+
+template <typename element>
+//Copy Constructor
+cop3530::CDAL<element>::CDAL(const CDAL &orig) : data(orig.data), tail(orig.tail), array_size(orig.array_size), unused_arrays(orig.unused_arrays) {    }
+
+template <typename element>
+//Copy Assignment Operator
+cop3530::CDAL<element>& cop3530::CDAL<element>::operator=(const CDAL &rhs) {
+    data = rhs.data;
+    tail = rhs.tail;
+    array_size = rhs.array_size;
+    unused_arrays = rhs.unused_arrays;
+    return *this;
+}
+
+template <typename element>
+//Move Constructor
+cop3530::CDAL<element>::CDAL(CDAL &&s) noexcept : data(s.data), tail(s.tail), array_size(s.array_size), unused_arrays(s.unused_arrays) {
+    s.data = nullptr;
+    s.tail = s.array_size = s.unused_arrays = 0;
+}
+
+template <typename element>
+//Move Assignment Operator
+cop3530::CDAL<element>& cop3530::CDAL<element>::operator=(CDAL &&rhs) noexcept {
+    if (this != &rhs) {
+        delete data;
+
+        data = rhs.data;
+        tail = rhs.tail;
+        array_size = rhs.array_size;
+        unused_arrays = rhs.unused_arrays;
+
+        rhs.data = nullptr;
+        rhs.tail = rhs.array_size = rhs.unused_arrays = 0;
+    }
+}
+
 template <typename element>
 //Destructor, traverses through each node and deletes its array
 cop3530::CDAL<element>::~CDAL() {
@@ -183,6 +225,7 @@ cop3530::CDAL<element>::~CDAL() {
     delete temp;
     delete data;
 }
+
 template <typename element>
 //Inserts element at a certain position
 void cop3530::CDAL<element>::insert(element object, int position) {
@@ -215,6 +258,7 @@ void cop3530::CDAL<element>::insert(element object, int position) {
 template <typename element>
 //Inserts element at the back of the list
 void cop3530::CDAL<element>::push_back (element object) {
+
 
     Node * temp = data;
     while (temp) {

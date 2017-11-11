@@ -13,7 +13,12 @@ class PSLL : public ADT<element>
 
     public:
         PSLL(size_t size);
+        PSLL(const PSLL&);
+        PSLL& operator=(const PSLL&);
+        PSLL(PSLL &&s) noexcept;
+        PSLL& operator=(PSLL&&) noexcept;
         ~PSLL();
+
         void insert(element object, int position) override;
         void push_back (element object) override;
         void push_front (element object) override;
@@ -130,6 +135,53 @@ cop3530::PSLL<element>::PSLL(size_t size) : total_size(size) {
         throw std::runtime_error("List cannot have a zero size. ");
     head = nullptr, tail = nullptr, pool_head = nullptr, pool_tail = nullptr;
 
+}
+
+template <typename element>
+//Copy Constructor
+cop3530::PSLL<element>::PSLL(const PSLL &orig) : head(orig.head), tail(orig.tail), pool_head(orig.pool_head),
+        pool_tail(orig.pool_tail), max_pool_length(orig.max_pool_length), total_size(orig.total_size) {    }
+
+template <typename element>
+//Copy Assignment Operator
+cop3530::PSLL<element>& cop3530::PSLL<element>::operator=(const PSLL &rhs) {
+    head = rhs.head;
+    tail = rhs.tail;
+    pool_head = rhs.pool_head;
+    pool_tail = rhs.tail;
+
+    total_size = rhs.total_size;
+    total_size = rhs.total_size;
+    return *this;
+}
+
+template <typename element>
+//Move Constructor
+cop3530::PSLL<element>::PSLL(PSLL &&s) noexcept : head(s.head), tail(s.tail), pool_head(s.pool_head),
+        pool_tail(s.pool_tail), max_pool_length(s.max_pool_length), total_size(s.total_size) {
+    s.head = s.tail = s.pool_head = s.pool_tail = nullptr;
+    s.max_pool_length = s.total_size = 0;
+}
+
+template <typename element>
+//Move Assignment Operator
+cop3530::PSLL<element>& cop3530::PSLL<element>::operator=(PSLL &&rhs) noexcept {
+    if (this != &rhs) {
+        delete head;
+        delete tail;
+        delete pool_head;
+        delete pool_tail;
+
+        head = rhs.head;
+        tail = rhs.tail;
+        pool_head = rhs.pool_head;
+        pool_tail = rhs.pool_tail;
+        max_pool_length = rhs.max_pool_length;
+        total_size = rhs.total_size;
+
+        rhs.head = rhs.tail = rhs.pool_head = rhs.pool_tail = nullptr;
+        rhs.max_pool_length = rhs.total_size = 0;
+    }
 }
 
 template <typename element>

@@ -11,8 +11,14 @@ template <typename element>
 class SDAL : public ADT<element>
 {
     public:
+
         SDAL(size_t inputSize = 50);
+        SDAL(const SDAL&);
+        SDAL& operator=(const SDAL&);
+        SDAL(SDAL &&s) noexcept;
+        SDAL& operator=(SDAL&&) noexcept;
         virtual ~SDAL();
+
         void insert(element object, int position) override;
         void push_back (element object) override;
         void push_front (element object) override;
@@ -118,10 +124,48 @@ cop3530::SDAL<element>::SDAL(size_t inputSize) : initial_size(inputSize) {
 }
 
 template <typename element>
+//Copy Constructor
+cop3530::SDAL<element>::SDAL(const SDAL &orig) : list(orig.list), tail(orig.tail), max_size(orig.max_size), initial_size(orig.initial_size) {    }
+
+template <typename element>
+//Copy Assignment Operator
+cop3530::SDAL<element>& cop3530::SDAL<element>::operator=(const SDAL &rhs) {
+    list = rhs.list;
+    tail = rhs.tail;
+    max_size = rhs.max_size;
+    initial_size = rhs.initial_size;
+    return *this;
+}
+
+template <typename element>
+//Move Constructor
+cop3530::SDAL<element>::SDAL(SDAL &&s) noexcept : list(s.list), tail(s.tail), max_size(s.max_size), initial_size(s.initial_size) {
+    s.list = nullptr;
+    s.max_size = s.tail = s.initial_size = 0;
+}
+
+template <typename element>
+//Move Assignment Operator
+cop3530::SDAL<element>& cop3530::SDAL<element>::operator=(SDAL &&rhs) noexcept {
+    if (this != &rhs) {
+        delete list;
+
+        list = rhs.list;
+        tail = rhs.tail;
+        max_size = rhs.max_size;
+        initial_size = rhs.initial_size;
+
+        rhs.list = nullptr;
+        rhs.max_size = rhs.initial_size = rhs.tail = 0;
+    }
+}
+
+template <typename element>
 //Destructor, deallocates array and pointer
 cop3530::SDAL<element>::~SDAL() {
     delete [] list;
 }
+
 template <typename element>
 //Inserts element at a certain position
 void cop3530::SDAL<element>::insert(element object, int position) {

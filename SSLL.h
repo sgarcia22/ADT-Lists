@@ -16,9 +16,15 @@ class SSLL : public ADT<element>
             element data;
             Node * next;
         };
-
+        //Constructors/Destructors
         SSLL(size_t size);
+        SSLL(const SSLL&);
+        SSLL& operator=(const SSLL&);
+        SSLL(SSLL &&s) noexcept;
+        SSLL& operator=(SSLL&&) noexcept;
         ~SSLL();
+
+
         void insert(element object, int position) override;
         void push_back (element object) override;
         void push_front (element object) override;
@@ -125,6 +131,42 @@ cop3530::SSLL<element>::SSLL(size_t size) {
     head = NULL;
     tail = NULL;
     max_size = size;
+}
+
+template <typename element>
+//Copy Constructor
+cop3530::SSLL<element>::SSLL(const SSLL &orig) : head(orig.head), tail(orig.tail), max_size(orig.max_size) {    }
+
+template <typename element>
+//Copy Assignment Operator
+cop3530::SSLL<element>& cop3530::SSLL<element>::operator=(const SSLL &rhs) {
+    head = rhs.head;
+    tail = rhs.tail;
+    max_size = rhs.max_size;
+    return *this;
+}
+
+template <typename element>
+//Move Constructor
+cop3530::SSLL<element>::SSLL(SSLL &&s) noexcept : head(s.head), tail(s.tail), max_size(s.max_size) {
+    s.head = s.tail = nullptr;
+    s.max_size = 0;
+}
+
+template <typename element>
+//Move Assignment Operator
+cop3530::SSLL<element>& cop3530::SSLL<element>::operator=(SSLL &&rhs) noexcept {
+    if (this != &rhs) {
+        delete head;
+        delete tail;
+
+        head = rhs.head;
+        tail = rhs.tail;
+        max_size = rhs.max_size;
+
+        rhs.head = rhs.tail = nullptr;
+        rhs.max_size = 0;
+    }
 }
 
 template <typename element>
