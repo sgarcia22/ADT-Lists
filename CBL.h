@@ -9,7 +9,7 @@ template <typename element>
 class CBL : public ADT<element>
 {
     public:
-        CBL();
+        CBL(size_t input_size);
         CBL(const CBL&);
         CBL& operator=(const CBL&);
         CBL(CBL &&s) noexcept;
@@ -172,18 +172,21 @@ template <typename element>
 void cop3530::CBL<element>::push_back (element object) {
     if (is_full())
         allocate_new();
-    if (tail == max_size - 1)
+    list[tail++] = object;
+    if (tail == max_size)
         tail = 0;
-    list[tail] = object;
-    ++tail;
 }
 template <typename element>
 //Inserts element at the front of the list
 void cop3530::CBL<element>::push_front (element object) {
     if (is_full())
         allocate_new();
-    if (head == 0)
-        head = max_size - 1;
+    if (!head && is_empty()) {
+        list[head] = object;
+        return;
+    }
+    else if (!head)
+        head = max_size;
     else
         --head;
     list[head] = object;
@@ -207,7 +210,7 @@ void cop3530::CBL<element>::insert(element object, int position) {
     size_t temp_tail = tail;
     for (int i = length(); i > 0; --i, --temp_tail) {
         if (temp_tail == -1)
-            temp_tail = max_size - 1;
+            temp_tail = max_size;
         if (temp_tail + 1 >= position) {
             list[temp_tail] = list[temp_tail - 1];
         }
@@ -223,7 +226,7 @@ template <typename element>
 void cop3530::CBL<element>::replace (element object, int position) {
     if (position > max_size)
         throw std::runtime_error("Not a valid position.\n ");
-    if (position - 1 > std::abs(tail - head))
+    if (position - 1 > std::abs(int(tail - head)))
         throw std::runtime_error("No element at that position to replace.\n ");
     list[position - 1] = object;
 }
@@ -236,7 +239,7 @@ void cop3530::CBL<element>::remove (int position) {
         throw std::runtime_error("Not a valid position.\n ");
     if (position - 1 > tail)
         throw std::runtime_error("No element at that position to remove.\n ");
-    for (int i = position - 1; i < length(); ++i) {
+    for (int i = position - 1; i < length(); ++i) { ///TODO::FIX
         if (i == max_size - 1)
             i = 0;
         list[i] = list[i + 1];
@@ -277,14 +280,17 @@ element cop3530::CBL<element>::item_at (int position) {
         throw std::runtime_error("Not a valid position.\n ");
     if (position - 1 > tail)
         throw std::runtime_error("No element at that position.\n ");
-    return list[position - 1];
+    if (head > tail)
+        return list[max_size - head - 1 + (position - (max_size - head) - 2)];
+    else
+        return list[position - 1 + head];
 }
 template <typename element>
 //Returns the element at the back of the list
 element cop3530::CBL<element>::peek_back () {
     size_t temp_tail = tail;
     if (!temp_tail)
-        temp_tail = max_size - 1;
+        temp_tail = max_size;
     else
         --temp_tail;
     return list[temp_tail];
@@ -307,7 +313,16 @@ bool cop3530::CBL<element>::is_full () {
 template <typename element>
 //Returns the length of the elements in the list
 size_t cop3530::CBL<element>::length () {
-    return std::abs(tail - head);
+    if (tail > head)
+        return tail - head;
+    else if (head > tail) {
+        size_t temp_size = 0;
+        temp_size = max_size - head + 1;
+        temp_size += tail;
+        return temp_size;
+    }
+    else
+        return 0;
 }
 template <typename element>
 //Clears the array of all its values
@@ -323,11 +338,12 @@ template <typename element>
 void cop3530::CBL<element>::shitPrint() {
     int j = head;
     for (int i = 0; i < length(); ++i, ++j) {
-        if (j == max_size - 1)
+        if (j == max_size + 1)
             j = 0;
         std::cout << list[j] << "  ";
     }
-    std::cout << "\nTAIL: " << tail << std::endl;
+     std::cout << "HEAD: " << head << std::endl;
+    std::cout << "TAIL: " << tail << std::endl;
     std::cout << "SIZE: " << max_size << std::endl;
 }
 template <typename element>
@@ -373,40 +389,47 @@ element * cop3530::CBL<element>::contents() {
         throw std::runtime_error("The list is empty, there are no elements.\n ");
     element * values = new element[length()];
     size_t temp_head = head;
-    for (int i = 0; i < length(); ++i, ++temp_head)
+    for (int i = 0; i < length(); ++i, ++temp_head) {
         if (temp_head == max_size - 1)
             head  = 0;
         values[i] = list[temp_head];
+    }
     return values;
 }
 template <typename element> ///TEST
 //Allocate a new array is the current one is using too much or too little memory
 void cop3530::CBL<element>::allocate_new() {
-
+    std::cout << "tail: " << tail << "  head: " << head << std::endl;
     if (is_full()) {
         int new_size = int(max_size  * 1.5 + 0.5);
         element * temp = new element [new_size + 1];
         size_t temp_head = head;
-        for (int i = 0; i < max_size; ++i, ++temp_head) {
-            if (temp_head == max_size - 1)
+        for (int i = 0; i < length(); ++i, ++temp_head) {
+            if (temp_head == max_size + 1)
                 temp_head = 0;
             temp[i] = list[temp_head];
         }
+        tail = length();
+        head = 0;
         delete [] list;
         list = temp;
-       // std::cout << "\nMAX SIZE: " << new_size << std::endl;
         max_size = new_size;
+
+        shitPrint();
+      //  std::cout << "tail: " << tail << "  head: " << head << std::endl;
     }
 
     if (max_size >= 2 * initial_size && ((max_size / 2) > length())) {
         int new_size = int(max_size  * .75 + 0.5);
         element * temp = new element [new_size + 1];
         size_t temp_head = head;
-        for (int i = 0; i < new_size; ++i, ++temp_head) {
-            if (temp_head == max_size - 1)
+        for (int i = 0; i < length(); ++i, ++temp_head) {
+            if (temp_head == max_size + 1)
                 temp_head = 0;
             temp[i] = list[temp_head];
         }
+        tail = length();
+        head = 0;
         delete [] list;
         list = temp;
         max_size = new_size;

@@ -3,6 +3,7 @@
 #include "PSLL.h"
 #include "SDAL.h"
 #include "CDAL.h"
+#include "CBL.h"
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -402,7 +403,7 @@ cout << endl;
     sdal_test->pop_front();
     sdal_test->shitPrint();*/
 
-    cout << "\n--------------CDAL ----------------\n";
+  /*  cout << "\n--------------CDAL ----------------\n";
 
     int size = 0;
 
@@ -416,7 +417,7 @@ cout << endl;
         if (!(size % 50))
             cout << endl;
     }
-    cout<<endl;
+    cout<<endl; */
 
     //cdal_test->shitPrint();
 
@@ -451,7 +452,7 @@ bool equals(element a, element b) {
             cout << endl;
     }
     cout<<endl;*/
-    cout << "\n" << cdal_test->length() << endl;
+  /*  cout << "\n" << cdal_test->length() << endl;
 
     cdal_test->pop_back();
 
@@ -505,7 +506,39 @@ bool equals(element a, element b) {
         ++size;
         if (!(size % 50))
             cout << endl;
-    }
+    }*/
+
+    cout << "\n--------------CDAL ----------------\n";
+    cop3530::CBL<int> * cbl_test = new cop3530::CBL<int> (50);
+
+    cbl_test->push_back(1);
+    cbl_test->push_front(2);
+    cbl_test->push_front(3);
+
+    for (int i = 0; i < 47; ++i)
+        cbl_test->push_back(i);
+   //for (int i = 0; i < 50; ++i)
+    //    cbl_test->push_back(i + 1);
+    cbl_test->shitPrint();
+    cout << cbl_test->length();
+    cout << "\n is full: " << cbl_test->is_full();
+        cout << "\n item at 5: " << cbl_test->item_at(5) << endl;
+
+    cbl_test->insert(4, 5);
+     cbl_test->shitPrint();
+    cout << "\nlength: " << cbl_test->length() << endl;
+
+    cout << "\n item at 5: " << cbl_test->item_at(5) << endl;
+
+
+    cbl_test->pop_front();
+    cbl_test->shitPrint();
+
+    cbl_test->pop_back();
+    cbl_test->shitPrint();
+
+    cbl_test->remove(18);
+    cbl_test->shitPrint();
 
     return 0;
 }
