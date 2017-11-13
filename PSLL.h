@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <typeinfo>
-///DEALLOCATE SHIT
+
 namespace cop3530 {
 
 template <typename element>
@@ -13,7 +13,12 @@ class PSLL : public ADT<element>
 
     public:
         PSLL(size_t size);
+        PSLL(const PSLL&);
+        PSLL& operator=(const PSLL&);
+        PSLL(PSLL &&s) noexcept;
+        PSLL& operator=(PSLL&&) noexcept;
         ~PSLL();
+
         void insert(element object, int position) override;
         void push_back (element object) override;
         void push_front (element object) override;
@@ -26,10 +31,11 @@ class PSLL : public ADT<element>
         element peek_front () override;
         bool is_empty () override;
         bool is_full () override;
+        bool is_pool_full ();
+        bool pool_is_empty();
         size_t length () override;
+        size_t pool_length();
         void clear () override;
-        void shitPrint(); ///ERASE
-        void poolPrint(); ///ERASE
         bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
@@ -41,11 +47,14 @@ class PSLL : public ADT<element>
             element data;
             Node * next;
         };
+
         Node * head;
         Node * tail;
-        Node ** pool;
-        Node * poolHead;
-        size_t pool_size;
+        Node * pool_head;
+        Node * pool_tail;
+
+        size_t const max_pool_length = 50;
+        size_t const total_size;
 
     public:
 
@@ -118,140 +127,182 @@ class PSLL : public ADT<element>
 
 template <typename element>
 //Constructor, initialize Nodes
-cop3530::PSLL<element>::PSLL(size_t size) {
+cop3530::PSLL<element>::PSLL(size_t size) : total_size(size) {
     //Set head and tail equal to null
-
     if (!size)
         throw std::runtime_error("List cannot have a zero size. ");
+    head = nullptr, tail = nullptr, pool_head = nullptr, pool_tail = nullptr;
 
-    head = NULL;
-    tail = NULL;
-    pool = new Node* [size];
-    pool_size = size;
+}
 
-    Node * temp;
-    //Allocate all of the free nodes
-    for (int i = 0; i < pool_size; ++i) {
-        pool[i] = new Node();
-        if (i == 0) {
-            poolHead = pool[i];
-            temp = poolHead;
-        }
-        else {
-            temp->next = pool[i];
-            temp = temp->next;
-        }
-        if (i == pool_size - 1) {
-            temp->next = NULL;
-        }
+template <typename element>
+//Copy Constructor
+cop3530::PSLL<element>::PSLL(const PSLL &orig) : head(orig.head), tail(orig.tail), pool_head(orig.pool_head),
+        pool_tail(orig.pool_tail), max_pool_length(orig.max_pool_length), total_size(orig.total_size) {    }
+
+template <typename element>
+//Copy Assignment Operator
+cop3530::PSLL<element>& cop3530::PSLL<element>::operator=(const PSLL &rhs) {
+    head = rhs.head;
+    tail = rhs.tail;
+    pool_head = rhs.pool_head;
+    pool_tail = rhs.tail;
+
+    total_size = rhs.total_size;
+    total_size = rhs.total_size;
+    return *this;
+}
+
+template <typename element>
+//Move Constructor
+cop3530::PSLL<element>::PSLL(PSLL &&s) noexcept : head(s.head), tail(s.tail), pool_head(s.pool_head),
+        pool_tail(s.pool_tail), max_pool_length(s.max_pool_length), total_size(s.total_size) {
+    s.head = s.tail = s.pool_head = s.pool_tail = nullptr;
+    s.max_pool_length = s.total_size = 0;
+}
+
+template <typename element>
+//Move Assignment Operator
+cop3530::PSLL<element>& cop3530::PSLL<element>::operator=(PSLL &&rhs) noexcept {
+    if (this != &rhs) {
+        delete head;
+        delete tail;
+        delete pool_head;
+        delete pool_tail;
+
+        head = rhs.head;
+        tail = rhs.tail;
+        pool_head = rhs.pool_head;
+        pool_tail = rhs.pool_tail;
+        max_pool_length = rhs.max_pool_length;
+        total_size = rhs.total_size;
+
+        rhs.head = rhs.tail = rhs.pool_head = rhs.pool_tail = nullptr;
+        rhs.max_pool_length = rhs.total_size = 0;
     }
-
 }
 
 template <typename element>
 //Deallocate free Nodes
 cop3530::PSLL<element>::~PSLL() {
-    for (int i = 0; i < pool_size; ++i) {
-        delete pool[i];
-    }
     delete head;
     delete tail;
-    delete poolHead;
-    delete [] pool;
+    delete pool_head;
+    delete pool_tail;
 }
 
 template <typename element>
 //Pushes an element to the front
 void cop3530::PSLL<element>::push_front(element object) {
-
-    if (!is_full()) {
+    if (is_full())
+        throw std::runtime_error ("The list is full, cannot push front.\n ");
+    //If the pool is empty allocate a new node
+    if (pool_is_empty()) {
+        //If the list is empty, allocate new node and make that the head
         if (is_empty()) {
-            Node * temp = new Node();
-            temp = poolHead -> next;
-            poolHead->data = object;
-            poolHead->next = NULL;
-            head = poolHead;
+            head = new Node();
+            head->data = object;
             tail = head;
-            poolHead = temp;
         }
         else {
             Node * temp = new Node();
-            temp = poolHead -> next;
-            poolHead->data = object;
-            poolHead->next = head;
-            head = poolHead;
-            poolHead = temp;
+            temp->data = object;
+            temp->next = head;
+            head = temp;
         }
     }
-    else
-        throw std::runtime_error("The List is full, cannot push to the front.\n ");
-
+    //If there are nodes in the pool
+    else {
+        if (is_empty()) {
+            head = pool_head;
+            pool_head = pool_head->next;
+            head->data = object;
+            tail = head;
+        }
+        else {
+            Node * temp = pool_head;
+            temp->data = object;
+            temp->next = head;
+            head = temp;
+            pool_head = pool_head->next;
+        }
+    }
     deallocateNodes();
-
 }
 
 template <typename element>
 //Pushes an element to the back
 void cop3530::PSLL<element>::push_back(element object) {
-
-    if (!is_full()) {
-        Node * temp = new Node();
-        temp = poolHead -> next;
-        poolHead->data = object;
-        poolHead->next = NULL;
-        //If there is no current head pointer
-        if (!head) {
-            //Since there are no more elements the head and tail pointers equal the same thing
-            head = poolHead;
-            tail = poolHead;
+    if (is_full())
+        throw std::runtime_error ("The list is full, cannot push back.\n ");
+    //If the pool is empty allocate a new node directly to the list
+    if (pool_is_empty()) {
+        if (is_empty()) {
+            head = new Node();
+            head->data = object;
+            tail = head;
         }
         else {
-            //Make the next element in the list equal the current Node
-            tail->next = poolHead;
+            tail->next = new Node();
+            tail = tail->next;
+            tail->data = object;
+        }
+    }
+    //Use a node from the pool and make it part of the list
+    else {
+        if (is_empty()) {
+            head = pool_head;
+            head->data = object;
+            tail = head;
+        }
+        else {
+            Node * temp = pool_head;
+            temp->data = object;
+            pool_head = pool_head->next;
+            tail->next = temp;
             tail = tail->next;
         }
-        poolHead = temp;
     }
-    else
-        throw std::runtime_error("The List is full, cannot push back.\n ");
-
     deallocateNodes();
-
 }
 
 template <typename element>
 //Inserts an element at the specified position
 void cop3530::PSLL<element>::insert(element object, int position) {
     if (is_full())
-        throw std::runtime_error("The list is full, cannot insert.\n ");
+        throw std::runtime_error ("The list is full, cannot insert.\n ");
     if (is_empty() && position != 0)
         throw std::runtime_error("The list is empty, cannot insert at the desired position.\n ");
-    if (position > length())
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
         push_front(object);
         return;
     }
-    if (position == length()) {
+    if (position == length() - 1) {
         push_back(object);
         return;
     }
-    Node * temp = new Node();
+    //Either allocate a new node or use one from the pool if not empty
+    Node * temp;
+    if (pool_is_empty())
+        temp = new Node();
+    else {
+        temp = pool_head;
+        pool_head = pool_head->next;
+    }
+    temp->data = object;
     Node * curr = head;
     int index = 0;
     while (curr) {
-        if (index + 1 == position) {
-            temp = poolHead->next;
-            poolHead->data = object;
-            poolHead->next = curr->next;
-            curr->next = poolHead;
-            poolHead = temp;
+        if (index == position) {
+            temp->next = curr->next;
+            curr->next = temp;
             break;
         }
         curr = curr->next;
         ++index;
     }
-
     deallocateNodes();
 }
 
@@ -260,12 +311,12 @@ template <typename element>
 void cop3530::PSLL<element>::replace(element object, int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position > length())
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     Node * curr = head;
     int index = 0;
     while (curr) {
-        if (index == position - 1) {
+        if (index == position) {
             curr->data = object;
             break;
         }
@@ -278,43 +329,49 @@ template <typename element>
 //Removes an element at the specified position and adds that removed node to the pool list
 void cop3530::PSLL<element>::remove(int position) {
     if (is_empty())
-        throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position > length() || !position)
+        throw std::runtime_error("The list is empty, cannot remove.\n ");
+    if (position >= length() || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-    if (position == 1) {
+    if (position == 0) {
         pop_front();
         return;
     }
-    if (position == length()) {
+    if (position == length() - 1) {
         pop_back();
         return;
     }
     Node * curr = head;
     int index = 0;
     while (curr) {
-        if (index == position - 2) {
+        if (index == position - 1) {
             Node * temp = new Node();
             temp = curr->next;
             curr->next = curr->next->next;
-            temp->next = poolHead;
-            poolHead = temp;
+            if (is_pool_full()) {
+                delete temp;
+            }
+            else {
+                temp->next = pool_head;
+                pool_head = temp;
+            }
             break;
         }
         curr = curr->next;
         ++index;
     }
+    deallocateNodes();
 }
 
 template <typename element>
 //Returns the item at a specified position
 element cop3530::PSLL<element>::item_at(int position) {
-    if (position > length())
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
 
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index == position - 1) {
+        if (index == position) {
             return temp->data;
         }
         temp = temp->next;
@@ -332,21 +389,29 @@ element cop3530::PSLL<element>::pop_back() {
     //If there is only one element in the list
     if (head == tail) {
         Node * curr = head;
-        curr->next = poolHead;
-        poolHead = curr;
-        clear();
+        curr->next = pool_head;
+        pool_head = curr;
+        head = tail = nullptr;
     }
     else {
         Node * curr = head;
         while (curr->next != tail) {
             curr = curr->next;
         }
-        Node * tempNode = tail;
-        tempNode->next = poolHead;
-        poolHead = tempNode;
-        tail = curr;
-        tail->next = NULL;
+        //If the pool is full
+        if (is_pool_full()) {
+            delete tail->next;
+            tail->next = nullptr;
+        }
+        else {
+            Node * tempNode = tail;
+            tempNode->next = pool_head;
+            pool_head = tempNode;
+            tail = curr;
+            tail->next = NULL;
+        }
     }
+    deallocateNodes();
     return temp;
 }
 
@@ -364,18 +429,21 @@ element cop3530::PSLL<element>::pop_front() {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot pop at front.\n ");
     element frontItem = head->data;
-    if (head == tail){
-      /*  Node * curr = head;
-        curr->next = poolHead;
-        poolHead = curr; */
-        clear();
-    }
-    else {
-        Node * temp = head;
+
+    Node * temp = head;
+
+    if (head->next)
         head = head->next;
-        temp->next = poolHead;
-        poolHead = temp;
+    else
+        head = nullptr;
+
+    if (is_pool_full())
+        delete temp;
+    else {
+        temp->next = pool_head;
+        pool_head = temp;
     }
+    deallocateNodes();
     return frontItem;
 }
 
@@ -388,19 +456,31 @@ element cop3530::PSLL<element>::peek_front() {
 }
 
 template <typename element>
-//Returns if the List is full
+//Returns if the pool is full
 bool cop3530::PSLL<element>::is_full() {
-    return (length() == pool_size ? true : false);
+    return (length() == total_size ? true : false);
 }
 
 template <typename element>
-//Returns if the List is empty
+//Returns if the pool is full
+bool cop3530::PSLL<element>::is_pool_full() {
+    return (pool_length() == max_pool_length ? true : false);
+}
+
+template <typename element>
+//Returns if the list is empty
 bool cop3530::PSLL<element>::is_empty() {
-    return (head == NULL && tail == NULL ? true : false);
+    return (head == nullptr && tail == nullptr ? true : false);
 }
 
 template <typename element>
-//Returns the length of the current lsit
+//Returns if the list is empty
+bool cop3530::PSLL<element>::pool_is_empty() {
+    return (!pool_length() ? true : false);
+}
+
+template <typename element>
+//Returns the length of the current list
 size_t cop3530::PSLL<element>::length() {
     if (!is_empty()) {
         size_t len = 0;
@@ -413,65 +493,28 @@ size_t cop3530::PSLL<element>::length() {
     }
     else
         return 0;
+}
 
+template <typename element>
+//returns the length of the pool
+size_t cop3530::PSLL<element>::pool_length() {
+    if (pool_head == nullptr)
+        return 0;
+    size_t counter = 0;
+    Node * temp = pool_head;
+    while (temp) {
+        ++counter;
+        temp = temp->next;
+    }
+    return counter;
 }
 
 template <typename element>
 //Clears the list
 void cop3530::PSLL<element>::clear() {
-    for (int i = 0; i < pool_size; ++i) {
-        delete pool[i];
-    }
-    delete [] pool;
-    //Copied from the constructor, make a new pool
-    head = NULL;
-    tail = NULL;
-    pool = new Node* [pool_size];
-
-    Node * temp;
-    //Allocate all of the free nodes
-    for (int i = 0; i < pool_size; ++i) {
-        pool[i] = new Node();
-        if (i == 0) {
-            poolHead = pool[i];
-            temp = poolHead;
-        }
-        else {
-            temp->next = pool[i];
-            temp = temp->next;
-        }
-        if (i == pool_size - 1) {
-            temp->next = NULL;
-        }
-    }
-
+    pool_head = pool_tail = nullptr;
+    head = tail = nullptr;
 }
-///REMOVE
-template <typename element>
-void cop3530::PSLL<element>::shitPrint() {
-    Node * temp = head;
-    while (temp) {
-        std::cout << temp->data << "   " ;
-        temp = temp->next;
-    }
-    std::cout << std::endl;
-}
-///REMOVE
-template <typename element>
-void cop3530::PSLL<element>::poolPrint() {
-    int howMany = 0;
-    Node * temp = new Node();
-    temp = poolHead;
-
-    while (temp) {
-        std::cout << "EMPTY   "  ;
-        temp = temp->next;
-        howMany++;
-    }
-    std::cout << std::endl;
-    std::cout << "HOW MANY??  " <<  howMany << std::endl;
-}
-
 
 template <typename element>
 //Prints all of the elements
@@ -529,13 +572,17 @@ bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (
 template <typename element>
 //Deallocates free Nodes that are not being used
 void cop3530::PSLL<element>::deallocateNodes() {
-    if (length() >= 100 && ((pool_size - length()) > (length() / 2))) {
+    if (length() >= 100 && (pool_length() > int((length() / 2) + 0.5))) {
+        std::cout << "Going in\n";
         //Calculating the new size of the pool; added 0.5 because casting truncates the value
-        int newSize = int(((length()) / 2) + 0.5);
-        int destroyNodes = pool_size - length() - newSize;
-        for (int i = 0; i < destroyNodes; ++i)
-            poolHead = poolHead->next;
-        pool_size = newSize;
+        size_t new_size = int(((length()) / 2) + 0.5);
+        size_t destroy_nodes = pool_length() - new_size;
+        Node * temp;
+        for (size_t i = 0; i < destroy_nodes; ++i) {
+            temp = pool_head;
+            pool_head = pool_head->next;
+            delete temp;
+        }
     }
 }
 

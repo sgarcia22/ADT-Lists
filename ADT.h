@@ -1,7 +1,6 @@
 #ifndef ADT_H
 #define ADT_H
-//For size_t
-#include <stdlib.h>
+#include <stdlib.h> //For size_t
 #include <iostream>
 
 namespace cop3530 {

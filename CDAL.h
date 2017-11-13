@@ -12,7 +12,12 @@ class CDAL : public ADT<element>
 {
     public:
         CDAL();
+        CDAL(const CDAL&);
+        CDAL& operator=(const CDAL&);
+        CDAL(CDAL &&s) noexcept;
+        CDAL& operator=(CDAL&&) noexcept;
         virtual ~CDAL();
+
         void insert(element object, int position) override;
         void push_back (element object) override;
         void push_front (element object) override;
@@ -25,9 +30,9 @@ class CDAL : public ADT<element>
         element peek_front () override;
         bool is_empty () override;
         bool is_full () override;
+        bool is_curr_arr_full ();
         size_t length () override;
         void clear () override;
-        void shitPrint(); ///ERASE
         bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
@@ -72,10 +77,10 @@ template <typename DataT>
             private:
                 Node * here;
                 pointer here_list;
-                int temp_tail;
+                int temp_iter_tail;
             public:
                 //Points to here
-                explicit CDAL_Iter(Node * start = nullptr, pointer start_pointer = nullptr) : here (start), here_list (start_pointer), temp_tail (0) {}
+                explicit CDAL_Iter(Node * start = nullptr, pointer start_pointer = nullptr) : here (start), here_list (start_pointer), temp_iter_tail (0) {}
                 CDAL_Iter (const CDAL_Iter& src) : here (src.here) {}
 
                 reference operator*() const {return *(here_list);}
@@ -91,11 +96,10 @@ template <typename DataT>
                 self_reference operator++() {
                     if (here_list != nullptr && here != nullptr) {
                         here_list++;
-                        temp_tail++;
-                        if (temp_tail == 50) {
+                        temp_iter_tail++;
+                        if (!(temp_iter_tail % 50)) {
                             here = here->next;
                             here_list = here->list;
-                            temp_tail = 0;
                         }
                         return *this;
                     }
@@ -105,15 +109,13 @@ template <typename DataT>
                     if (here_list != nullptr && here != nullptr) {
                         self_reference temp(*this);
                         here_list++;
-                        temp_tail++;
-                        if (temp_tail == 50) {
+                        temp_iter_tail++;
+                        if (!(temp_iter_tail % 50)) {
                             here = here->next;
                             here_list = here->list;
-                            temp_tail = 0;
                         }
                         return temp;
                     }
-
                 }
 
                 bool operator==(CDAL_Iter<DataT> const& rhs) const {return here_list == rhs.here_list;}
@@ -133,30 +135,30 @@ template <typename DataT>
             while (temp->next)
                 temp = temp->next;
 
-            element * temp_tail = temp->list;
-            int temp_counter = tail;
-            while (temp_counter >= 0) {
-                temp_tail++;
+            element * temp_iter_tail = temp->list;
+            int temp_counter = tail % 50;
+            while (temp_counter > 0) {
+                temp_iter_tail++;
                 temp_counter--;
             }
 
-            return iterator(temp, temp_tail);
+            return iterator(temp, temp_iter_tail);
         }
 
-        const_iterator begin() const {return iterator(data, data->list);}
+        const_iterator begin() const {return const_iterator(data, data->list);}
         const_iterator end() const {
             Node * temp = data;
             while (temp->next)
                 temp = temp->next;
 
-            element * temp_tail = temp->list;
-            int temp_counter = tail;
-            while (temp_counter >= 0) {
-                temp_tail++;
+            element * temp_iter_tail = temp->list;
+            int temp_counter = tail % 50;
+            while (temp_counter > 0) {
+                temp_iter_tail++;
                 temp_counter--;
             }
 
-            return iterator(temp, temp_tail);
+            return const_iterator(temp, temp_iter_tail);
         }
 };
 }
@@ -166,9 +168,47 @@ template <typename element>
 cop3530::CDAL<element>::CDAL() {
     data = new Node();
     data->list = new element[array_size];
-    tail = -1;
+    tail = 0;
     data->next = NULL;
 }
+
+template <typename element>
+//Copy Constructor
+cop3530::CDAL<element>::CDAL(const CDAL &orig) : data(orig.data), tail(orig.tail), array_size(orig.array_size), unused_arrays(orig.unused_arrays) {    }
+
+template <typename element>
+//Copy Assignment Operator
+cop3530::CDAL<element>& cop3530::CDAL<element>::operator=(const CDAL &rhs) {
+    data = rhs.data;
+    tail = rhs.tail;
+    array_size = rhs.array_size;
+    unused_arrays = rhs.unused_arrays;
+    return *this;
+}
+
+template <typename element>
+//Move Constructor
+cop3530::CDAL<element>::CDAL(CDAL &&s) noexcept : data(s.data), tail(s.tail), array_size(s.array_size), unused_arrays(s.unused_arrays) {
+    s.data = nullptr;
+    s.tail = s.array_size = s.unused_arrays = 0;
+}
+
+template <typename element>
+//Move Assignment Operator
+cop3530::CDAL<element>& cop3530::CDAL<element>::operator=(CDAL &&rhs) noexcept {
+    if (this != &rhs) {
+        delete data;
+
+        data = rhs.data;
+        tail = rhs.tail;
+        array_size = rhs.array_size;
+        unused_arrays = rhs.unused_arrays;
+
+        rhs.data = nullptr;
+        rhs.tail = rhs.array_size = rhs.unused_arrays = 0;
+    }
+}
+
 template <typename element>
 //Destructor, traverses through each node and deletes its array
 cop3530::CDAL<element>::~CDAL() {
@@ -182,12 +222,13 @@ cop3530::CDAL<element>::~CDAL() {
     delete temp;
     delete data;
 }
+
 template <typename element>
 //Inserts element at a certain position
 void cop3530::CDAL<element>::insert(element object, int position) {
   //If the list is full allocate a new Node with an array that fits 50 items
-    if (position > length())
-         throw std::runtime_error ("Not a valid position.\n ");
+    if (position >= length()  || position < 0)
+         throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
 
     //This will be the new array with the added elements
     element * values = new element[length() + 1];
@@ -195,9 +236,9 @@ void cop3530::CDAL<element>::insert(element object, int position) {
     element * curr = contents();
     //Copy values from current into new array and insert the new value
     for (int i = 0; i < length() + 1; ++i) {
-        if (i < position - 1)
+        if (i < position)
             values[i] = curr[i];
-        else if (i == position - 1)
+        else if (i == position)
             values[i] = object;
         else
             values[i] = curr[i - 1];
@@ -211,54 +252,50 @@ void cop3530::CDAL<element>::insert(element object, int position) {
     }
 
 }
+
 template <typename element>
 //Inserts element at the back of the list
 void cop3530::CDAL<element>::push_back (element object) {
-    //If the list is full allocate a new Node with an array that fits 50 items
-    if (is_full())
-        allocate_new();
-    //Move tail pointer to correct new index
-    if (tail == 49) {
-        tail = 0;
-        if (unused_arrays > 0)
-            --unused_arrays;
-    }
-    else
-        ++tail;
+
+    size_t temp_tail = tail % 50;
 
     Node * temp = data;
     while (temp) {
         if (!(temp->next)) {
-            temp->list[tail] = object;
+            temp->list[temp_tail] = object;
         }
         temp = temp->next;
     }
 
+    //If the list is full allocate a new Node with an array that fits 50 items
+    if (is_curr_arr_full())
+        allocate_new();
+
+    ++temp_tail;
+   //Move temp_tail pointer to correct new index
+    if (temp_tail == 50 && unused_arrays > 0)
+        --unused_arrays;
+    ++tail;
+
 }
+
 template <typename element>
 //Inserts element at the front of the list
 void cop3530::CDAL<element>::push_front (element object) {
-    //If the list is full allocate a new Node with an array that fits 50 items
-    if (is_full()) {
-        allocate_new();
-    }
+
+    size_t temp_tail = tail % 50;
+
     Node * curr = data;
     //Will keep track of the last index in the previous array
     element temp;
     //Will keep track of the last index in the current array
     element last_temp;
-    if (tail == 49) {
-        tail = 0;
-        if (unused_arrays > 0)
-            --unused_arrays;
-    }
-    else
-        ++tail;
+
     while (curr) {
 
         if (!(curr->next)) {
 
-             for (int i = tail; i >= 0; --i) {
+             for (int i = temp_tail; i >= 0; --i) {
                  curr->list[i] = curr->list[i - 1];
              }
              if (curr == data)
@@ -289,14 +326,24 @@ void cop3530::CDAL<element>::push_front (element object) {
         }
     }
 
+     //If the list is full allocate a new Node with an array that fits 50 items
+    if (is_curr_arr_full()) {
+        allocate_new();
+    }
+
+    ++temp_tail;
+     if (temp_tail == 50 &&unused_arrays > 0)
+        --unused_arrays;
+    ++tail;
 }
+
 template <typename element>
 //Replaces an element at the specified index
 void cop3530::CDAL<element>::replace (element object, int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot replace.\n ");
-    if (position > length())
-         throw std::runtime_error ("Not a valid position.\n ");
+    if (position >= length()  || position < 0)
+         throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
     Node * temp = data;
     while (temp) {
         //If the desired element is in another node, go to the next node and decrease the position index
@@ -306,29 +353,32 @@ void cop3530::CDAL<element>::replace (element object, int position) {
             position -=50;
         }
         else {
-            temp->list[position - 1] = object;
+            temp->list[position] = object;
             break;
         }
     }
 }
+
 template <typename element>
 //Removes an element at the specified position and moves all the succeeding elements up the list by one
 void cop3530::CDAL<element>::remove (int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot replace.\n ");
-    if (position > length())
-         throw std::runtime_error ("Not a valid position.\n ");
+    if (position >= length()  || position < 0)
+         throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
 
-    if (position == length()) {
+    if (position == length() - 1) {
         pop_back();
         return;
     }
-    if (position == 1) {
+    if (position == 0) {
         pop_front();
         return;
     }
+
+    size_t temp_tail = tail % 50;
     //Increase the number of unused arrays
-    if (!tail)
+    if (!temp_tail)
         ++unused_arrays;
     size_t temp_unused = unused_arrays;
     //This will be the new array with the added elements
@@ -338,9 +388,9 @@ void cop3530::CDAL<element>::remove (int position) {
     element * curr = contents();
     //Copy values from current into new array and insert the new value
     for (int i = 0; i < length() - 1; ++i) {
-        if (i < position - 1)
+        if (i < position)
             values[i] = curr[i];
-        else if (i >= position - 1)
+        else if (i >= position)
             values[i] = curr[i + 1];
     }
 
@@ -354,102 +404,95 @@ void cop3530::CDAL<element>::remove (int position) {
     //Deallocate unused arrays if condition holds
     deallocate_old();
 }
+
 template <typename element>
 //Removes and returns an element from the back of the list
 element cop3530::CDAL<element>::pop_back () {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot pop at the back.\n ");
-    Node * temp = data;
+
+    element * curr = contents();
     element last;
-    while (temp) {
-        if (!(temp->next)) {
-            last = temp->list[tail];
-            if (tail || temp == data) {
-                --tail;
-                break;
-            }
-            else {
-                tail = 49;
-                ++unused_arrays;
-                temp = NULL;
-                break;
-            }
+    size_t temp_length = length();
+
+    clear();
+
+    for (int i = 0; i < temp_length - 1; ++i) {
+        if (i - 1 == temp_length - 1) {
+            last = curr[i];
+            break;
         }
-        temp = temp->next;
+        push_back(curr[i]);
     }
+
+    delete curr;
+
     //Deallocate unused arrays if condition holds
     deallocate_old();
     return last;
 
 }
+
 template <typename element>
 //Removes and returns an element from the front of the list, moving all the succeeding element up the list by one
 element cop3530::CDAL<element>::pop_front () {
+
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot pop at the front.\n ");
-    element front = data->list[0];
-    Node * temp;
-    Node * curr = data;
-    while (curr) {
-        if (curr == data) {
-            for (int i = 0; i < array_size; ++i) {
-                curr->list[i] = curr->list[i + 1];
-            }
-            temp = data;
-            curr = curr->next;
-        }
-        else {
-            temp->list[array_size - 1] = curr->list[0];
-            for (int i = 0; i < array_size; ++i) {
-                curr->list[i] = curr->list[i + 1];
-            }
-            temp = curr;
-            curr = curr->next;
-        }
-    }
-    if (tail == 0) {
-        tail = array_size - 1;
-        ++unused_arrays;
-    }
-    else
-        --tail;
+
+    element * curr = contents();
+
+    element front = curr[0];
+
+    size_t temp_length = length();
+
+    clear();
+
+    for (int i = 1; i < temp_length; ++i)
+        push_back(curr[i]);
+
+
+    delete curr;
+
     //Deallocate unused arrays if condition holds
     deallocate_old();
     return front;
 }
+
 template <typename element>
 //Returns the item at the specified index
 element cop3530::CDAL<element>::item_at (int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, there are no elements.\n ");
-    if (position - 1 < 0 || position > length())
-        throw std::runtime_error ("Not a valid position.\n ");
+    if (position < 0 || position >= length())
+        throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
     int current_index = 0;
     Node * temp = data;
     while (temp) {
-        if (position > array_size) {
+        if (position >= array_size) {
             temp = temp->next;
             position -= 50;
         }
         else {
-            return temp->list[position - 1];
+            return temp->list[position];
         }
     }
-
 }
+
 template <typename element>
 //Returns the element at the back of the list
 element cop3530::CDAL<element>::peek_back () {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot peek back.\n ");
-    Node * temp = data;
-    while (temp) {
-        if (!(temp->next)) {
-            return temp->list[tail];
-        }
-        temp = temp->next;
-    }
+    element last_element;
+    element * curr = contents();
+    for (int i = 0; i < length(); ++i)
+        if (i == length() - 1)
+            last_element = curr[i];
+    delete curr;
+    return last_element;
 }
+
 template <typename element>
 //Returns the element at the front of the list
 element cop3530::CDAL<element>::peek_front () {
@@ -457,38 +500,31 @@ element cop3530::CDAL<element>::peek_front () {
         throw std::runtime_error("The list is empty, cannot peek front.\n ");
     return data->list[0];
 }
+
 template <typename element>
 //Returns whether the list is empty
 bool cop3530::CDAL<element>::is_empty () {
-    return (tail == -1 && !(data->next));
+    return (tail == 0 && !(data->next));
 }
+
 template <typename element>
-//Returns whether the list is full
-bool cop3530::CDAL<element>::is_full () {
-    return (tail + 1 == array_size);
+//Returns whether the current array is full
+bool cop3530::CDAL<element>::is_curr_arr_full () {
+    return ((tail % 50) + 1 == array_size);
 }
+
+template <typename element>
+//Returns whether the list is full, always returns false because the list allocates new nodes
+bool cop3530::CDAL<element>::is_full () {
+    return false;
+}
+
 template <typename element>
 //Returns the length of the elements in the list
 size_t cop3530::CDAL<element>::length () {
-    int len = 0;
-    Node * temp = data;
-    while (temp) {
-        if (!(temp->next)) {
-            len += tail + 1;
-            break;
-        }
-        temp = temp->next;
-        len += 50;
-    }
-/*    if (unused_arrays) {
-        int temp_unused = unused_arrays;
-        while (temp_unused > 0) {
-            len -= 50;
-            --temp_unused;
-        }
-    } */
-    return len;
+    return tail;
 }
+
 template <typename element>
 //Clears the array of all its values
 void cop3530::CDAL<element>::clear () {
@@ -498,47 +534,24 @@ void cop3530::CDAL<element>::clear () {
     //Make a new list with data pointing to it
     data = new Node();
     data->list = new element[array_size];
-    tail = -1;
+    tail = 0;
     data->next = NULL;
     unused_arrays = 0;
 }
-///ERASE
-template <typename element>
 
-void cop3530::CDAL<element>::shitPrint() {
-    Node * temp = data;
-    int index = 1;
-    while (temp) {
-        std::cout << "\n----------- NODE " << index << " --------------\n" << std::endl;
-        for (int i = 0; i < array_size; ++i)
-            std::cout << temp->list[i] << "    ";
-        ++index;
-        temp = temp->next;
-    }
-    std::cout << std::endl;
-}
 template <typename element>
 //Returns whether the list contains the specified value
 bool cop3530::CDAL<element>::contains (element object, bool (*equals_function) (element, element)) {
     if (is_empty())
         return false;
-    Node * temp = data;
-    while (temp) {
-        //If the last node
-        if (!(temp->next)) {
-            for (int i = 0; i <= tail; ++i)
-                if (equals_function(object, temp->list[i])) return true;
-            //    if (object == temp->list[i]) return true;
-        }
-        else {
-            for (int i = 0; i < array_size; ++i)
-                if (equals_function(object, temp->list[i])) return true;
-           //    if (object == temp->list[i]) return true;
-        }
-        temp = temp->next;
-    }
+
+    element * curr = contents();
+    for (int i = 0; i < length(); ++i)
+        if (equals_function(object, curr[i]))
+            return true;
     return false;
 }
+
 template <typename element>
 //Returns whether two elements are equal
 bool cop3530::CDAL<element>::equals(element a, element b) {
@@ -564,18 +577,23 @@ std::ostream& cop3530::CDAL<element>::print (std::ostream& out) {
     }
     return out;
 }
+
 template <typename element>
 //Returns the contents of the list
 element * cop3530::CDAL<element>::contents() {
     if (is_empty())
         throw std::runtime_error("The list is empty, there are no elements.\n ");
+    size_t temp_tail = tail % 50;
     element * values = new element[length()];
     int current_index = 0;
     Node * curr = data;
     while (curr) {
         if (!(curr->next)) {
-            for (int i = 0; i <= tail; ++i, ++current_index)
+            for (int i = 0; i < temp_tail; ++i, ++current_index) {
+                if (i == temp_tail)
+                    break;
                 values[current_index] = curr->list[i];
+            }
             break;
         }
         else {
@@ -586,6 +604,7 @@ element * cop3530::CDAL<element>::contents() {
     }
     return values;
 }
+
 template <typename element>
 //Allocates a new array is full
 void cop3530::CDAL<element>::allocate_new(){
@@ -600,11 +619,13 @@ void cop3530::CDAL<element>::allocate_new(){
         curr = curr->next;
     }
 }
+
 template <typename element>
 //Deallocated half the arrays when more than half are unused
 void cop3530::CDAL<element>::deallocate_old() {
     size_t total_arrays = 0;
     Node * temp = data;
+
     //Get the total number of arrays
     while (temp) {
         ++total_arrays;
