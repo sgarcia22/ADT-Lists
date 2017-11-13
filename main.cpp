@@ -508,10 +508,84 @@ bool equals(element a, element b) {
             cout << endl;
     }*/
 
-    cout << "\n--------------CDAL ----------------\n";
-    cop3530::CBL<int> * cbl_test = new cop3530::CBL<int> (50);
 
-    cbl_test->push_back(1);
+
+
+  /*
+    cout << "\n--------------CDAL ----------------\n";
+    cop3530::CBL<int> * cbl_test = new cop3530::CBL<int> (100);
+
+    int index = 1;
+    for (int i = 0; i < 100; ++i, ++index)
+        cbl_test->push_front(index);
+    cbl_test->shitPrint();
+
+    cbl_test->insert(30, 50);
+    cbl_test->shitPrint();
+        //Will push to front of CDAL or SDAL List
+    cbl_test->insert(79, 0);
+    cbl_test->shitPrint();
+    cout << "\nitem at 51: " << cbl_test->item_at(51) << "\nitem at 101: " << cbl_test->item_at(101) << endl;
+
+    int * list_contents = cbl_test->contents();
+    for (int i = 0; i < cbl_test->length(); ++i)
+        cout << list_contents[i] << "  ";
+
+     cbl_test->remove(0);
+     cbl_test->shitPrint();
+
+
+    cout << "\n--------------CDAL ----------------\n";
+
+
+     */
+
+
+cop3530::CBL<int> * cbl_test = new cop3530::CBL<int> (100);
+
+    for (int i = 0; i < 110; ++i)
+        cbl_test->push_front(i);
+    cbl_test->shitPrint();
+        std::cout << "/n";
+
+    for (cop3530::CBL<int>::iterator it = cbl_test->begin(); it != cbl_test->end(); ++it)
+        cout << *it << "  ";
+
+    std::cout << "\n\n\n";
+    cbl_test->clear();
+    for (int i = 0; i < 110; ++i)
+        cbl_test->push_back(i);
+    cbl_test->shitPrint();
+    std::cout << "/n";
+    for (cop3530::CBL<int>::iterator it = cbl_test->begin(); it != cbl_test->end(); ++it)
+        cout << *it << "  ";
+       /* if (*it > 100) {
+
+            break;
+        }
+        */
+        //cout << *it << "  ";
+
+
+   // cbl_test->remove(0);
+/*
+cbl_test->push_front(6);
+cbl_test->shitPrint();
+
+cbl_test->remove(0);
+cbl_test->shitPrint();
+
+cbl_test->remove(6);
+cbl_test->shitPrint();
+   /* for (int i = 0; i < 100; ++i)
+        cbl_test->push_back(1 + i);
+    cbl_test->shitPrint();
+    cbl_test->push_back(101);
+    cbl_test->shitPrint();
+    cbl_test->push_front(0);
+    cbl_test->shitPrint();
+    cout << "Item at 101: " << cbl_test->item_at(101) << endl;*/
+   /* cbl_test->push_back(1);
     cbl_test->push_front(2);
     cbl_test->push_front(3);
 
@@ -537,8 +611,11 @@ bool equals(element a, element b) {
     cbl_test->pop_back();
     cbl_test->shitPrint();
 
-    cbl_test->remove(18);
+    cbl_test->remove(5);
     cbl_test->shitPrint();
 
+     for (cop3530::CBL<int>::iterator it = cbl_test->begin(); it != cbl_test->end(); ++it) {
+        cout << *it << "  ";
+     } */
     return 0;
 }

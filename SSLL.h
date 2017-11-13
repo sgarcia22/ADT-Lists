@@ -39,7 +39,6 @@ class SSLL : public ADT<element>
         bool is_full () override;
         size_t length () override;
         void clear () override;
-        void shitPrint(); ///ERASE
         bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
@@ -134,8 +133,9 @@ cop3530::SSLL<element>::SSLL(size_t size) {
 }
 
 template <typename element>
-//Copy Constructor
-cop3530::SSLL<element>::SSLL(const SSLL &orig) : head(orig.head), tail(orig.tail), max_size(orig.max_size) {    }
+//Deep Copy Constructor
+cop3530::SSLL<element>::SSLL(const SSLL &orig) : head(orig.head), tail(orig.tail), max_size(orig.max_size) {
+}
 
 template <typename element>
 //Copy Assignment Operator
@@ -220,7 +220,6 @@ void cop3530::SSLL<element>::push_back(element object) {
     }
     else
         throw std::runtime_error("The List is full, cannot push back.\n ");
-
 }
 
 template <typename element>
@@ -228,15 +227,15 @@ template <typename element>
 void cop3530::SSLL<element>::insert(element object, int position) {
     if (is_full())
         throw std::runtime_error("The list is full, cannot insert.\n ");
-    if (is_empty() && position != 0)
+    if (is_empty() && position > 0)
         throw std::runtime_error("The list is empty, cannot insert at desired position.\n ");
-    if (position > length())
+    if (position > length() || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
         push_front(object);
         return;
     }
-    if (position == length()) {
+    if (position == length() - 1) {
         push_back(object);
         return;
     }
@@ -261,12 +260,12 @@ template <typename element>
 void cop3530::SSLL<element>::replace(element object, int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position > length())
+    if (position >= length() || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index == position - 1) {
+        if (index == position) {
             temp->data = object;
             break;
         }
@@ -280,20 +279,20 @@ template <typename element>
 void cop3530::SSLL<element>::remove(int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position > length())
+    if (position >= length() || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-    if (position == 1) {
+    if (position == 0) {
         pop_front();
         return;
     }
-    if (position == length()) {
+    if (position == length() - 1) {
         pop_back();
         return;
     }
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index == position - 2) {
+        if (index == position - 1) {
             temp->next = temp->next->next;
             break;
         }
@@ -305,13 +304,13 @@ void cop3530::SSLL<element>::remove(int position) {
 template <typename element>
 //Returns the item at a specified position
 element cop3530::SSLL<element>::item_at(int position) {
-    if (position > length())
+    if (position >= length() || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
 
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index == position - 1) {
+        if (index == position) {
             return temp->data;
         }
         temp = temp->next;
@@ -406,15 +405,6 @@ void cop3530::SSLL<element>::clear() {
     head = NULL;
     tail = NULL;
 }
-template <typename element>
-void cop3530::SSLL<element>::shitPrint() {
-    Node * temp = head;
-    while (temp) {
-        std::cout << temp->data << "   " ;
-        temp = temp->next;
-    }
-    std::cout << std::endl;
-}
 
 template <typename element>
 //Prints all of the elements
@@ -467,8 +457,6 @@ bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (
             return true;
         temp = temp->next;
     }
-
     return false;
-
 }
 #endif // SSLL_H

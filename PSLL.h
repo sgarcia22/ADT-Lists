@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <typeinfo>
-///DEALLOCATE SHIT
+
 namespace cop3530 {
 
 template <typename element>
@@ -36,8 +36,6 @@ class PSLL : public ADT<element>
         size_t length () override;
         size_t pool_length();
         void clear () override;
-        void shitPrint(); ///ERASE
-        void poolPrint(); ///ERASE
         bool contains (element object, bool (*equals_function) (element, element)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
@@ -275,13 +273,13 @@ void cop3530::PSLL<element>::insert(element object, int position) {
         throw std::runtime_error ("The list is full, cannot insert.\n ");
     if (is_empty() && position != 0)
         throw std::runtime_error("The list is empty, cannot insert at the desired position.\n ");
-    if (position > length())
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
         push_front(object);
         return;
     }
-    if (position == length()) {
+    if (position == length() - 1) {
         push_back(object);
         return;
     }
@@ -297,7 +295,7 @@ void cop3530::PSLL<element>::insert(element object, int position) {
     Node * curr = head;
     int index = 0;
     while (curr) {
-        if (index + 1 == position) {    ///Double check these indices
+        if (index == position) {
             temp->next = curr->next;
             curr->next = temp;
             break;
@@ -313,12 +311,12 @@ template <typename element>
 void cop3530::PSLL<element>::replace(element object, int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position > length())
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     Node * curr = head;
     int index = 0;
     while (curr) {
-        if (index == position - 1) {
+        if (index == position) {
             curr->data = object;
             break;
         }
@@ -332,20 +330,20 @@ template <typename element>
 void cop3530::PSLL<element>::remove(int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot remove.\n ");
-    if (position > length() || !position)
+    if (position >= length() || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-    if (position == 1) {
+    if (position == 0) {
         pop_front();
         return;
     }
-    if (position == length()) {
+    if (position == length() - 1) {
         pop_back();
         return;
     }
     Node * curr = head;
     int index = 0;
     while (curr) {
-        if (index == position - 2) {
+        if (index == position - 1) {
             Node * temp = new Node();
             temp = curr->next;
             curr->next = curr->next->next;
@@ -367,13 +365,13 @@ void cop3530::PSLL<element>::remove(int position) {
 template <typename element>
 //Returns the item at a specified position
 element cop3530::PSLL<element>::item_at(int position) {
-    if (position > length())
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
 
     Node * temp = head;
     int index = 0;
     while (temp) {
-        if (index == position - 1) {
+        if (index == position) {
             return temp->data;
         }
         temp = temp->next;
@@ -517,28 +515,6 @@ void cop3530::PSLL<element>::clear() {
     pool_head = pool_tail = nullptr;
     head = tail = nullptr;
 }
-///REMOVE
-template <typename element>
-void cop3530::PSLL<element>::shitPrint() {
-    Node * temp = head;
-    while (temp) {
-        std::cout << temp->data << "   " ;
-        temp = temp->next;
-    }
-    std::cout << std::endl;
-}
-///REMOVE
-template <typename element>
-void cop3530::PSLL<element>::poolPrint() {
-    Node * temp = pool_head;
-    size_t counter = 0;
-    while (temp) {
-        ++counter;
-        std::cout << temp->data << "  ";
-        temp = temp->next;
-    }
-    if (counter == 0) std::cout << "EMPTY\n";
-}
 
 template <typename element>
 //Prints all of the elements
@@ -593,7 +569,7 @@ bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (
     return false;
 }
 
-template <typename element> ///TEST WELL, NOT SURE WHEN THIS HAPPENS
+template <typename element>
 //Deallocates free Nodes that are not being used
 void cop3530::PSLL<element>::deallocateNodes() {
     if (length() >= 100 && (pool_length() > int((length() / 2) + 0.5))) {
