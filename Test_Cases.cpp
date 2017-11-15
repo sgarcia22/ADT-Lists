@@ -1,8 +1,9 @@
-#include "ADT.h"
+#include "List.h"
 #include "CDAL.h"
 #include "PSLL.h"
 #include "SDAL.h"
 #include "SSLL.h"
+#include "CBL.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,7 +19,7 @@ bool equals(element a, element b) {
 
 template <typename element>
 
-bool test_int_passed(cop3530::ADT<element> * test_case_1) {
+bool test_int_passed(cop3530::List<element> * test_case_1) {
 
     int index = 1;
     for (int i = 0; i < 100; ++i, ++index)
@@ -27,24 +28,12 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     if (test_case_1->is_empty()) return false;
     if (test_case_1->length() != 100) return false;
     //Should through a runtime exception for all typenames except CDAL and SDAL which allocates more memory
-    if (dynamic_cast<cop3530::CDAL<element> *>(test_case_1) == nullptr && dynamic_cast<cop3530::SDAL<element> *>(test_case_1) == nullptr) {
-        try {
-            test_case_1->push_back(101);
-            return false;
-        }
-        catch (const std::runtime_error e) {}
-          try {
-            test_case_1->push_front(0);
-            return false;
-        }
-        catch (const std::runtime_error e) {}
-    }
-    else {
-        test_case_1->push_back(101);
-        test_case_1->push_front(0);
-        if (test_case_1->length() != 102) return false;
-        if (test_case_1->item_at(101) != 101 || test_case_1->item_at(0) != 0) return false; ///wrong - fix
-    }
+
+	test_case_1->push_back(101);
+	test_case_1->push_front(0);
+	if (test_case_1->length() != 102) return false;
+	if (test_case_1->item_at(101) != 101 || test_case_1->item_at(0) != 0) return false;
+
 
     test_case_1->clear();
     if (test_case_1->is_full()  || !(test_case_1->is_empty())) return false;
@@ -56,36 +45,20 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     if (test_case_1->is_empty()) return false;
     if (test_case_1->length() != 100) return false;
     //Testing the insert function
-    if (dynamic_cast<cop3530::CDAL<element> *>(test_case_1) == nullptr && dynamic_cast<cop3530::SDAL<element> *>(test_case_1) == nullptr) {
-        //Should through a runtime_error exception
-        try {
-            test_case_1->insert(30, 49);
-            return false;
-        }
-        catch (const std::runtime_error e) {}
-          try {
-            test_case_1->insert(30, 99);
-            return false;
-        }
-        catch (const std::runtime_error e) {}
-    }
-    else {
-        test_case_1->insert(30, 50);
-        //Will push to front of CDAL or SDAL List
-        test_case_1->insert(79, 0);
-        if (test_case_1->length() != 102) return false;
-        //If we passed in the SDAL or CDAL class
-        if (dynamic_cast<cop3530::SDAL<element> *>(test_case_1) != nullptr || dynamic_cast<cop3530::CDAL<element> *>(test_case_1) != nullptr) {
-            if (test_case_1->item_at(51) != 30) return false;
-            if (test_case_1->item_at(101) != 1) return false;
-        }
-        //Remove inserted elements
-        test_case_1->remove(0);
-        test_case_1->remove(50);
-        if (test_case_1->item_at(0) != 100) return false;
-        if (test_case_1->item_at(50) != 50) return false;
 
-    }
+	test_case_1->insert(30, 50);
+	//Will push to front of CDAL or SDAL List
+	test_case_1->insert(79, 0);
+	if (test_case_1->length() != 102) return false;
+
+	if (test_case_1->item_at(51) != 30) return false; ///ERROR
+	if (test_case_1->item_at(101) != 1) return false;
+
+	//Remove inserted elements
+	test_case_1->remove(0);
+	test_case_1->remove(50);
+	if (test_case_1->item_at(0) != 100) return false;
+	if (test_case_1->item_at(50) != 50) return false;
 
     test_case_1->replace(40, 9);
     if (test_case_1->item_at(9) != 40) return false;
@@ -107,34 +80,10 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
     if (test_case_1->length() != 97) return false;
     if (test_case_1->item_at(8) != 90) return false;
 
-    //Checking Print Function
     test_case_1->clear();
-    //Should print out <empty list>
-    std::ofstream out_file("test_case_1.txt");
-    test_case_1->print(out_file);
 
     for (int i = 1; i < 6; ++i)
         test_case_1->push_back(i);
-
-    std::ofstream out_file_2("test_case_2.txt");
-    test_case_1->print(out_file_2);
-
-    std::string first_file_content;
-
-    std::ifstream in_file_1 ("test_case_1.txt");
-    if (!in_file_1) return false;
-
-    std::ifstream in_file_2 ("test_case_2.txt");
-    if (!in_file_2) return false;
-
-    ///CHECK PRINT CONTENTS?
-   /* std::string output;
-
-    in_file_1.open("test_case_1.txt");
-    if (in_file_1.is_open()) {
-        while(std::getline(in_file_1, output))
-            std::cout << output;
-    } */
 
     //Checking contents Function
     element true_contents [5] = {1, 2, 3, 4, 5};
@@ -164,7 +113,7 @@ bool test_int_passed(cop3530::ADT<element> * test_case_1) {
 
 bool test_ssll_iterator () {
 
-    cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> (100);
+    cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> ();
     for (int i = 1; i <= 100; ++i)
         ssll_list->push_back(i);
 
@@ -197,14 +146,13 @@ bool test_ssll_iterator () {
         ++index;
     }
 
-
     return true;
 
 }
 
 bool test_psll_iterator () {
 
-    cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> (100);
+    cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> ();
     for (int i = 1; i <= 100; ++i)
         psll_list->push_back(i);
 
@@ -314,10 +262,11 @@ int main () {
 
     bool all_passed = true;
 
-    cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> (100);
-    cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> (100);
+    cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> ();
+    cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> ();
     cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> (100);
     cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
+    cop3530::CBL<int> * cbl_list = new cop3530::CBL<int> ();
 
     std::cout << "--------------- TEST CASES ---------------\n";
     std::cout << "\t     --- INT LIST ---\n";
@@ -344,6 +293,12 @@ int main () {
         std::cout << "CDAL TEST CASE: PASSED\n";
     else {
         std::cout << "CDAL TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_int_passed(cbl_list))
+        std::cout << "CBL TEST CASE: PASSED\n";
+    else {
+        std::cout << "CBL TEST CASE: FAILED\n" ;
         all_passed = false;
     }
 

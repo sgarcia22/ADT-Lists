@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include "ADT.h"
+#include "List.h"
 #include "CBL.h"
 #include "SSLL.h"
 #include "PSLL.h"
@@ -20,7 +20,7 @@ bool equals(element a, element b) {
 
 TEST_CASE( "CBL List Test Case" ) {
 
-    cop3530::CBL<int> * cbl_list = new cop3530::CBL<int> (100);
+    cop3530::CBL<int> * cbl_list = new cop3530::CBL<int> ();
 
     int index = 1;
     for (int i = 0; i < 100; ++i, ++index)
@@ -89,23 +89,20 @@ TEST_CASE( "CBL List Test Case" ) {
 
     cbl_list->clear();
 
-    std::ofstream out_file("cbl_list.txt");
-    cbl_list->print(out_file);
+	std::ostringstream out_file_1;
+	cbl_list->print(out_file_1);
+	std::string in_file_1 = out_file_1.str();
+
+	REQUIRE_THAT ( in_file_1 , EndsWith("<empty list>") );
 
     for (int i = 1; i < 6; ++i)
         cbl_list->push_back(i);
 
-    std::ofstream out_file_2("test_case_2.txt");
-    cbl_list->print(out_file_2);
-    std::ifstream in_file_1 ("cbl_list.txt");
+	std::ostringstream out_file_2;
+	cbl_list->print(out_file_2);
+	std::string in_file_2 = out_file_2.str();
 
-    std::ifstream in_file_2 ("test_case_2.txt");
-
-    REQUIRE ( in_file_1 );
-    REQUIRE ( in_file_2 );
-
-    ///TODO
-   // REQUIRE (  )
+	REQUIRE_THAT ( in_file_2 , EndsWith("<1,2,3,4,5>") );
 
     int true_contents [5] = {1, 2, 3, 4, 5};
     int * list_contents = cbl_list->contents();
@@ -132,7 +129,7 @@ TEST_CASE( "CBL List Test Case" ) {
 
 TEST_CASE( "CBL Iterator" ) {
 
-    cop3530::CBL<int> * cbl_list_iter = new cop3530::CBL<int> (100);
+    cop3530::CBL<int> * cbl_list_iter = new cop3530::CBL<int> ();
 
      for (int i = 1; i <= 100; ++i)
         cbl_list_iter->push_back(i);
@@ -175,3 +172,122 @@ TEST_CASE( "CBL Iterator" ) {
 
 }
 
+TEST_CASE ( "SSLL Print" ) {
+
+	cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> ();
+
+	std::ostringstream out_file_1;
+	ssll_list->print(out_file_1);
+	std::string in_file_1 = out_file_1.str();
+
+	REQUIRE_THAT ( in_file_1 , EndsWith("<empty list>") );
+
+	for (int i = 0; i < 100; ++i)
+        ssll_list->push_front(i + 1);
+
+    std::ostringstream out_file_2;
+    ssll_list->print(out_file_2);
+	std::string in_file_2 = out_file_2.str();
+
+    REQUIRE_THAT ( in_file_2 , EndsWith("5,4,3,2,1>") );
+
+	ssll_list->pop_back();
+	ssll_list->pop_front();
+
+	std::ostringstream out_file_3;
+    ssll_list->print(out_file_3);
+	std::string in_file_3 = out_file_3.str();
+
+	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+
+}
+
+TEST_CASE ( "PSLL Print" ) {
+
+	cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> ();
+
+	std::ostringstream out_file_1;
+	psll_list->print(out_file_1);
+	std::string in_file_1 = out_file_1.str();
+
+	REQUIRE_THAT ( in_file_1 , EndsWith("<empty list>") );
+
+	for (int i = 0; i < 100; ++i)
+        psll_list->push_front(i + 1);
+
+    std::ostringstream out_file_2;
+    psll_list->print(out_file_2);
+	std::string in_file_2 = out_file_2.str();
+
+    REQUIRE_THAT ( in_file_2 , EndsWith("5,4,3,2,1>") );
+
+	psll_list->pop_back();
+	psll_list->pop_front();
+
+	std::ostringstream out_file_3;
+    psll_list->print(out_file_3);
+	std::string in_file_3 = out_file_3.str();
+
+	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+
+}
+
+TEST_CASE ( "SDAL Print" ) {
+
+	cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> (100);
+
+	std::ostringstream out_file_1;
+	sdal_list->print(out_file_1);
+	std::string in_file_1 = out_file_1.str();
+
+	REQUIRE_THAT ( in_file_1 , EndsWith("<empty list>") );
+
+	for (int i = 0; i < 100; ++i)
+        sdal_list->push_front(i + 1);
+
+    std::ostringstream out_file_2;
+    sdal_list->print(out_file_2);
+	std::string in_file_2 = out_file_2.str();
+
+    REQUIRE_THAT ( in_file_2 , EndsWith("5,4,3,2,1>") );
+
+	sdal_list->pop_back();
+	sdal_list->pop_front();
+
+	std::ostringstream out_file_3;
+    sdal_list->print(out_file_3);
+	std::string in_file_3 = out_file_3.str();
+
+	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+
+}
+
+TEST_CASE ( "CDAL Print" ) {
+
+	cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
+
+	std::ostringstream out_file_1;
+	cdal_list->print(out_file_1);
+	std::string in_file_1 = out_file_1.str();
+
+	REQUIRE_THAT ( in_file_1 , EndsWith("<empty list>") );
+
+	for (int i = 0; i < 100; ++i)
+        cdal_list->push_front(i + 1);
+
+    std::ostringstream out_file_2;
+    cdal_list->print(out_file_2);
+	std::string in_file_2 = out_file_2.str();
+
+    REQUIRE_THAT ( in_file_2 , EndsWith("5,4,3,2,1>") );
+
+	cdal_list->pop_back();
+	cdal_list->pop_front();
+
+	std::ostringstream out_file_3;
+    cdal_list->print(out_file_3);
+	std::string in_file_3 = out_file_3.str();
+
+	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+
+}
