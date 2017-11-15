@@ -16,7 +16,6 @@ Test Cases:
 First four tested with normal cpp, fifth tested with Catch (catch.hpp-> not my code)
 
 TODO::
-*Deep Copy Constructors
+*Check Deep Copy Constructors
 *Valgrind
-*Check Print Functions
 *Test Strings
