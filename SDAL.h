@@ -1,14 +1,14 @@
 #ifndef SDAL_H
 #define SDAL_H
-#include "ADT.h"
 
+#include "List.h"
 #include <iostream>
 
 namespace cop3530 {
 
 template <typename element>
 
-class SDAL : public ADT<element>
+class SDAL : public List<element>
 {
     public:
 
@@ -23,7 +23,7 @@ class SDAL : public ADT<element>
         void push_back (element object) override;
         void push_front (element object) override;
         void replace (element object, int position) override;
-        void remove (int position) override;
+        element remove (int position) override;
         element pop_back () override;
         element pop_front () override;
         element item_at (int position) override;
@@ -31,6 +31,7 @@ class SDAL : public ADT<element>
         element peek_front () override;
         bool is_empty () override;
         bool is_full () override;
+        bool is_curr_full ();
         size_t length () override;
         void clear () override;
         bool contains (element object, bool (*equals_function) (element, element)) override;
@@ -97,7 +98,6 @@ class SDAL : public ADT<element>
     };
 
     //Iterator Implementation
-    using size_t = std::size_t;
     using value_type = element;
     using iterator = SDAL_Iter<element>;
     using const_iterator = SDAL_Iter<element const>;
@@ -123,16 +123,31 @@ cop3530::SDAL<element>::SDAL(size_t inputSize) : initial_size(inputSize) {
 }
 
 template <typename element>
-//Copy Constructor
-cop3530::SDAL<element>::SDAL(const SDAL &orig) : list(orig.list), tail(orig.tail), max_size(orig.max_size), initial_size(orig.initial_size) {    }
+//Deep Copy Constructor
+cop3530::SDAL<element>::SDAL(const SDAL &orig) : list(nullptr), tail(orig.tail), max_size(orig.max_size), initial_size(orig.initial_size) {
+    if (!list)
+        return;
+    //Make a new array
+    list = new element [max_size + 1];
+    //Copy the elements over if they exist
+    for (int i = 0; i < length(); ++i) {
+        element temp = list[i];
+        list[i] = new element(temp);
+    }
+}
 
 template <typename element>
-//Copy Assignment Operator
+//Deep Copy Assignment Operator
 cop3530::SDAL<element>& cop3530::SDAL<element>::operator=(const SDAL &rhs) {
-    list = rhs.list;
-    tail = rhs.tail;
-    max_size = rhs.max_size;
-    initial_size = rhs.initial_size;
+    if (list)
+        this->~SDAL();
+    using std::swap;
+    swap(rhs.list, list);
+    swap(rhs.tail, tail);
+    swap(rhs.max_size, max_size);
+    swap(rhs.initial_size, initial_size);
+    rhs.list = nullptr;
+    rhs.tail = rhs.max_size = rhs.initial_size = 0;
     return *this;
 }
 
@@ -149,13 +164,14 @@ cop3530::SDAL<element>& cop3530::SDAL<element>::operator=(SDAL &&rhs) noexcept {
     if (this != &rhs) {
         delete list;
 
-        list = rhs.list;
-        tail = rhs.tail;
-        max_size = rhs.max_size;
-        initial_size = rhs.initial_size;
+        using std::swap;
+        swap(rhs.list, list);
+        swap(rhs.tail, tail);
+        swap(rhs.max_size, max_size);
+        swap(rhs.initial_size, initial_size);
 
         rhs.list = nullptr;
-        rhs.max_size = rhs.initial_size = rhs.tail = 0;
+        rhs.tail = rhs.max_size = rhs.initial_size = 0;
     }
 }
 
@@ -168,9 +184,9 @@ cop3530::SDAL<element>::~SDAL() {
 template <typename element>
 //Inserts element at a certain position
 void cop3530::SDAL<element>::insert(element object, int position) {
-    if (is_full())
+    if (is_curr_full())
         allocate_new();
-    if (position >= max_size || position < 0)
+    if (position >= max_size || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position >= length()) {
         push_back(object);
@@ -193,7 +209,7 @@ void cop3530::SDAL<element>::insert(element object, int position) {
 template <typename element>
 //Inserts element at the back of the list
 void cop3530::SDAL<element>::push_back (element object) {
-    if (is_full())
+    if (is_curr_full())
         allocate_new();
     list[tail] = object;
     ++tail;
@@ -202,7 +218,7 @@ void cop3530::SDAL<element>::push_back (element object) {
 template <typename element>
 //Inserts element at the front of the list
 void cop3530::SDAL<element>::push_front (element object) {
-    if (is_full())
+    if (is_curr_full())
         allocate_new();
     if (!is_empty()) {
         for (int i = length(); i >= 0; --i) {
@@ -216,7 +232,7 @@ void cop3530::SDAL<element>::push_front (element object) {
 template <typename element>
 //Replaces an element at the specified index
 void cop3530::SDAL<element>::replace (element object, int position) {
-    if (position >= max_size  || position < 0)
+    if (position >= max_size  || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position > tail)
         throw std::runtime_error("No element at that position to replace.\n ");
@@ -225,17 +241,23 @@ void cop3530::SDAL<element>::replace (element object, int position) {
 
 template <typename element>
 //Removes an element at the specified position and moves all the succeeding elements up the list by one
-void cop3530::SDAL<element>::remove (int position) {
+element cop3530::SDAL<element>::remove (int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot remove an element.\n ");
-    if (position >= max_size  || position < 0)
+    if (position >= max_size  || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position > tail)
         throw std::runtime_error("No element at that position to remove.\n ");
-    for (int i = position; i < length(); ++i)
+    element to_return;
+    for (int i = position; i < length(); ++i) {
+		if (i == position)
+			to_return = list[i];
         list[i] = list[i + 1];
+	}
     --tail;
     allocate_new();
+
+    return to_return;
 }
 
 template <typename element>
@@ -265,7 +287,7 @@ element cop3530::SDAL<element>::pop_front () {
 template <typename element>
 //Returns the item at the specified index
 element cop3530::SDAL<element>::item_at (int position) {
-    if (position >= max_size  || position < 0)
+    if (position >= length()  || position < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position > tail)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
@@ -293,6 +315,12 @@ bool cop3530::SDAL<element>::is_empty () {
 template <typename element>
 //Returns whether the list is full
 bool cop3530::SDAL<element>::is_full () {
+    return false;
+}
+
+template <typename element>
+//Returns whether the list is full
+bool cop3530::SDAL<element>::is_curr_full () {
     return (tail == max_size);
 }
 

@@ -1,14 +1,12 @@
 #ifndef CDAL_H
 #define CDAL_H
-#include "ADT.h"
-
-#include <iostream>
+#include "List.h"
 
 namespace cop3530 {
 
 template <typename element>
 
-class CDAL : public ADT<element>
+class CDAL : public List<element>
 {
     public:
         CDAL();
@@ -22,7 +20,7 @@ class CDAL : public ADT<element>
         void push_back (element object) override;
         void push_front (element object) override;
         void replace (element object, int position) override;
-        void remove (int position) override;
+        element remove (int position) override;
         element pop_back () override;
         element pop_front () override;
         element item_at (int position) override;
@@ -48,6 +46,7 @@ class CDAL : public ADT<element>
         struct Node {
             element * list;
             Node * next;
+            ~Node() {};
         };
         //Keeps track of the tail in any array
         int tail;
@@ -124,7 +123,6 @@ template <typename DataT>
         };
 
         //Iterator Implementation
-        using size_t = std::size_t;
         using value_type = element;
         using iterator = CDAL_Iter<element>;
         using const_iterator = CDAL_Iter<element const>;
@@ -174,15 +172,60 @@ cop3530::CDAL<element>::CDAL() {
 
 template <typename element>
 //Copy Constructor
-cop3530::CDAL<element>::CDAL(const CDAL &orig) : data(orig.data), tail(orig.tail), array_size(orig.array_size), unused_arrays(orig.unused_arrays) {    }
+cop3530::CDAL<element>::CDAL(const CDAL &orig) : data(nullptr), tail(orig.tail), array_size(orig.array_size), unused_arrays(orig.unused_arrays), array_size(orig.array_size)  {
+    //If no list then exit
+    if (!data)
+        return;
+    //Temporary variable for the data
+    Node * temp = orig.data;
+    //Allocate a new node
+    data = new Node ();
+
+    data->list = new element [array_size];
+    for (int i = 0; i < array_size(); ++i) {
+        if (!temp->list[i])
+            break;
+        element ex = temp->list[i];
+        data->list[i] = new element(ex);
+    }
+
+    data->next = nullptr;
+
+    Node * curr = data;
+    temp = temp->next;
+    //Copy the orig's values into the new list
+    while (temp) {
+        curr->next = new Node ();
+        curr = curr->next;
+        //Copy the data
+        curr->list = new element [array_size];
+        for (int i = 0; i < array_size(); ++i) {
+            if (!temp->list[i])
+                break;
+            element ex = temp->list[i];
+            curr->list[i] = new element(ex);
+        }
+        curr->next = nullptr;
+        //Keep going through orig's SSLL
+        temp = temp->next;
+    }
+}
 
 template <typename element>
 //Copy Assignment Operator
 cop3530::CDAL<element>& cop3530::CDAL<element>::operator=(const CDAL &rhs) {
-    data = rhs.data;
-    tail = rhs.tail;
-    array_size = rhs.array_size;
-    unused_arrays = rhs.unused_arrays;
+     if (data)
+        this->~CDAL();
+    //Swap the old values to the new values, deleting the old after
+    using std::swap;
+    swap(rhs.data, data);
+    swap(rhs.tail, tail);
+    swap(rhs.array_size, array_size);
+    swap(rhs.unused_arrays, unused_arrays);
+
+    rhs.data = nullptr;
+    rhs.tail = rhs.array_size = rhs.array_size = rhs.unused_arrays = nullptr;
+
     return *this;
 }
 
@@ -215,12 +258,12 @@ cop3530::CDAL<element>::~CDAL() {
     //Delete each array in each Node and it's respective Node
     Node * temp = data;
     while (temp) {
-        delete [] data->list;
-        data = temp->next;
-        temp = temp->next;
+        Node * next = temp->next;
+        delete [] temp->list;
+        delete temp;
+        temp = next;
     }
-    delete temp;
-    delete data;
+    data = nullptr;
 }
 
 template <typename element>
@@ -342,7 +385,7 @@ template <typename element>
 void cop3530::CDAL<element>::replace (element object, int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot replace.\n ");
-    if (position >= length()  || position < 0)
+    if (position >= length()  || signed(position)  < 0)
          throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
     Node * temp = data;
     while (temp) {
@@ -361,19 +404,19 @@ void cop3530::CDAL<element>::replace (element object, int position) {
 
 template <typename element>
 //Removes an element at the specified position and moves all the succeeding elements up the list by one
-void cop3530::CDAL<element>::remove (int position) {
+element cop3530::CDAL<element>::remove (int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, cannot replace.\n ");
-    if (position >= length()  || position < 0)
+    if (position >= length()  || signed(position)  < 0)
          throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
 
     if (position == length() - 1) {
-        pop_back();
-        return;
+        element to_return = pop_back();
+        return to_return;
     }
     if (position == 0) {
-        pop_front();
-        return;
+        element to_return = pop_front();
+        return to_return;
     }
 
     size_t temp_tail = tail % 50;
@@ -384,10 +427,12 @@ void cop3530::CDAL<element>::remove (int position) {
     //This will be the new array with the added elements
     element * values = new element[length() - 1];
     //Get old array
-
+	element to_return;
     element * curr = contents();
     //Copy values from current into new array and insert the new value
     for (int i = 0; i < length() - 1; ++i) {
+		if (i == position)
+			to_return = curr[i];
         if (i < position)
             values[i] = curr[i];
         else if (i >= position)
@@ -403,6 +448,8 @@ void cop3530::CDAL<element>::remove (int position) {
 
     //Deallocate unused arrays if condition holds
     deallocate_old();
+
+    return to_return;
 }
 
 template <typename element>
@@ -464,7 +511,7 @@ template <typename element>
 element cop3530::CDAL<element>::item_at (int position) {
     if (is_empty())
         throw std::runtime_error ("The list is empty, there are no elements.\n ");
-    if (position < 0 || position >= length())
+    if (signed(position) < 0 || position >= length())
         throw std::runtime_error ("Invalid Index; no element at the specified position.\n ");
     int current_index = 0;
     Node * temp = data;
@@ -529,8 +576,14 @@ template <typename element>
 //Clears the array of all its values
 void cop3530::CDAL<element>::clear () {
     //Delete each array in each Node and it's respective Node
-    delete [] data;
-    data = NULL;
+    Node * temp = data;
+    while (temp) {
+        Node * next = temp->next;
+        delete [] temp->list;
+        delete temp;
+        temp = next;
+    }
+    data = nullptr;
     //Make a new list with data pointing to it
     data = new Node();
     data->list = new element[array_size];

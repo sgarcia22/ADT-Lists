@@ -1,23 +1,27 @@
 #ifndef SSLL_H
 #define SSLL_H
 
+#include "List.h"
 #include <iostream>
 #include <typeinfo>
+#include <utility>
 
 namespace cop3530 {
 
 template <typename element>
 
-class SSLL : public ADT<element>
+class SSLL : public List<element>
 {
     public:
 
         struct Node {
             element data;
             Node * next;
+            ~Node() {};
         };
+
         //Constructors/Destructors
-        SSLL(size_t size);
+        SSLL();
         SSLL(const SSLL&);
         SSLL& operator=(const SSLL&);
         SSLL(SSLL &&s) noexcept;
@@ -29,7 +33,7 @@ class SSLL : public ADT<element>
         void push_back (element object) override;
         void push_front (element object) override;
         void replace (element object, int position) override;
-        void remove (int position) override;
+        element remove (int position) override;
         element pop_back () override;
         element pop_front () override;
         element item_at (int position) override;
@@ -48,7 +52,6 @@ class SSLL : public ADT<element>
 
             Node * head;
             Node * tail;
-            size_t max_size;
 
         public:
 
@@ -109,7 +112,6 @@ class SSLL : public ADT<element>
         };
 
         //Iterator Implementation
-        using size_t = std::size_t;
         using value_type = element;
         using iterator = SSLL_Iter<element>;
         using const_iterator = SSLL_Iter<element const>;
@@ -125,32 +127,55 @@ class SSLL : public ADT<element>
 
 //Constructor, initialize Nodes
 template <typename element>
-cop3530::SSLL<element>::SSLL(size_t size) {
+cop3530::SSLL<element>::SSLL() {
     //Set head and tail equal to null
-    head = NULL;
-    tail = NULL;
-    max_size = size;
+    head = tail = nullptr;
 }
 
 template <typename element>
 //Deep Copy Constructor
-cop3530::SSLL<element>::SSLL(const SSLL &orig) : head(orig.head), tail(orig.tail), max_size(orig.max_size) {
+cop3530::SSLL<element>::SSLL(const SSLL &orig) : head (nullptr) , tail (nullptr) {
+    //If no list then exit the deep copy
+    if (!orig.head)
+        return;
+    //Temporary variable for the head
+    Node * temp = orig.head;
+    //Allocate a new node
+    head = new Node ();
+    head->data = temp->data;
+    head->next = nullptr;
+
+    tail = head;
+    temp = temp->next;
+    //Copy orig's values into the new list
+    while (temp) {
+        tail->next = new Node ();
+        tail = tail->next;
+        //Copy the data
+        tail->data = temp->data;
+        tail->next = nullptr;
+        //Keep going through orig's SSLL
+        temp = temp->next;
+    }
 }
 
 template <typename element>
 //Copy Assignment Operator
 cop3530::SSLL<element>& cop3530::SSLL<element>::operator=(const SSLL &rhs) {
-    head = rhs.head;
-    tail = rhs.tail;
-    max_size = rhs.max_size;
+    if (head)
+        this->~SSLL();
+    //Swap the old values to the new values, deleting the old after
+    using std::swap;
+    swap(rhs.head, head);
+    swap(rhs.tail, tail);
+    rhs.head = rhs.tail = nullptr;
     return *this;
 }
 
 template <typename element>
 //Move Constructor
-cop3530::SSLL<element>::SSLL(SSLL &&s) noexcept : head(s.head), tail(s.tail), max_size(s.max_size) {
+cop3530::SSLL<element>::SSLL(SSLL &&s) noexcept : head(s.head), tail(s.tail) {
     s.head = s.tail = nullptr;
-    s.max_size = 0;
 }
 
 template <typename element>
@@ -160,20 +185,24 @@ cop3530::SSLL<element>& cop3530::SSLL<element>::operator=(SSLL &&rhs) noexcept {
         delete head;
         delete tail;
 
-        head = rhs.head;
-        tail = rhs.tail;
-        max_size = rhs.max_size;
+        using std::swap;
+        swap(rhs.head, head);
+        swap(rhs.tail, tail);
 
         rhs.head = rhs.tail = nullptr;
-        rhs.max_size = 0;
     }
 }
 
 template <typename element>
-//Destructor, deallocates and deletes Nodes
+//Class Destructor
 cop3530::SSLL<element>::~SSLL() {
-    delete head;
-    delete tail;
+    Node * temp = head;
+    while (temp) {
+        Node * next = temp->next;
+        delete temp;
+        temp = next;
+    }
+    head = tail = nullptr;
 }
 
 template <typename element>
@@ -220,6 +249,7 @@ void cop3530::SSLL<element>::push_back(element object) {
     }
     else
         throw std::runtime_error("The List is full, cannot push back.\n ");
+
 }
 
 template <typename element>
@@ -227,9 +257,9 @@ template <typename element>
 void cop3530::SSLL<element>::insert(element object, int position) {
     if (is_full())
         throw std::runtime_error("The list is full, cannot insert.\n ");
-    if (is_empty() && position > 0)
+    if (is_empty() && signed(position)  > 0)
         throw std::runtime_error("The list is empty, cannot insert at desired position.\n ");
-    if (position > length() || position < 0)
+    if (position > length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
         push_front(object);
@@ -260,7 +290,7 @@ template <typename element>
 void cop3530::SSLL<element>::replace(element object, int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position >= length() || position < 0)
+    if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     Node * temp = head;
     int index = 0;
@@ -276,35 +306,38 @@ void cop3530::SSLL<element>::replace(element object, int position) {
 
 template <typename element>
 //Removes an element at the specified position
-void cop3530::SSLL<element>::remove(int position) {
+element cop3530::SSLL<element>::remove(int position) {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot replace.\n ");
-    if (position >= length() || position < 0)
+    if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
-        pop_front();
-        return;
+        element to_return = pop_front(); ///Getting an error
+        return to_return;
     }
     if (position == length() - 1) {
-        pop_back();
-        return;
+        element to_return = pop_back();
+        return to_return;
     }
     Node * temp = head;
     int index = 0;
+    element to_return;
     while (temp) {
         if (index == position - 1) {
+			to_return = temp->next->data;
             temp->next = temp->next->next;
             break;
         }
         temp = temp->next;
         ++index;
     }
+    return to_return;
 }
 
 template <typename element>
 //Returns the item at a specified position
 element cop3530::SSLL<element>::item_at(int position) {
-    if (position >= length() || position < 0)
+    if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
 
     Node * temp = head;
@@ -373,7 +406,7 @@ element cop3530::SSLL<element>::peek_front() {
 template <typename element>
 //Returns if the List is full
 bool cop3530::SSLL<element>::is_full() {
-    return (length() == max_size ? true : false);
+    return false;
 }
 
 template <typename element>
@@ -402,8 +435,13 @@ size_t cop3530::SSLL<element>::length() {
 template <typename element>
 //Clears the list
 void cop3530::SSLL<element>::clear() {
-    head = NULL;
-    tail = NULL;
+    Node * temp = head;
+    while (temp) {
+        Node * next = temp->next;
+        delete temp;
+        temp = next;
+    }
+    head = tail = nullptr;
 }
 
 template <typename element>
@@ -452,7 +490,6 @@ bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (
 
     Node * temp = head;
     while (temp) {
-        //if (temp->data == object)
         if (equals_function(object, temp->data))
             return true;
         temp = temp->next;
