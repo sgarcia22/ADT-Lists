@@ -27,9 +27,9 @@ class PSLL : public List<element>
         element remove (int position) override;
         element pop_back () override;
         element pop_front () override;
-        element item_at (int position) override;
-        element peek_back () override;
-        element peek_front () override;
+        element & item_at (int position) override;
+        element & peek_back () override;
+        element & peek_front () override;
         bool is_empty () override;
         bool is_full () override;
         bool is_pool_full ();
@@ -37,7 +37,7 @@ class PSLL : public List<element>
         size_t length () override;
         size_t pool_length();
         void clear () override;
-        bool contains (element object, bool (*equals_function) (element, element)) override;
+        bool contains (element object, bool (*equals_function) (const element&, const element&)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         //Function that will deallocate the free Nodes that are not being used
@@ -235,6 +235,8 @@ void cop3530::PSLL<element>::push_front(element object) {
             temp->data = object;
             temp->next = head;
             head = temp;
+            temp = nullptr;
+            delete temp;
         }
     }
     //If there are nodes in the pool
@@ -251,6 +253,8 @@ void cop3530::PSLL<element>::push_front(element object) {
             temp->next = head;
             head = temp;
             pool_head = pool_head->next;
+            temp = nullptr;
+            delete temp;
         }
     }
     deallocateNodes();
@@ -287,6 +291,8 @@ void cop3530::PSLL<element>::push_back(element object) {
             pool_head = pool_head->next;
             tail->next = temp;
             tail = tail->next;
+            temp = nullptr;
+            delete temp;
         }
     }
     deallocateNodes();
@@ -299,13 +305,13 @@ void cop3530::PSLL<element>::insert(element object, int position) {
         throw std::runtime_error ("The list is full, cannot insert.\n ");
     if (is_empty() && position != 0)
         throw std::runtime_error("The list is empty, cannot insert at the desired position.\n ");
-    if (position >= length()  || signed(position)  < 0)
+    if (position > length()  || signed(position)  < 0) ///TODO
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
         push_front(object);
         return;
     }
-    if (position == length() - 1) {
+    if (position == length()) {
         push_back(object);
         return;
     }
@@ -329,6 +335,8 @@ void cop3530::PSLL<element>::insert(element object, int position) {
         curr = curr->next;
         ++index;
     }
+    temp = nullptr;
+    delete temp;
     deallocateNodes();
 }
 
@@ -358,54 +366,35 @@ element cop3530::PSLL<element>::remove(int position) {
         throw std::runtime_error("The list is empty, cannot remove.\n ");
     if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-    if (position == 0) {
-        element to_return = pop_front();
-        return to_return;
-    }
-    if (position == length() - 1) {
-        element to_return = pop_back();
-        return to_return;
-    }
+    if (position == 0)
+        return pop_front();
+    if (position == length() - 1)
+        return pop_back();
+
     Node * curr = head;
     int index = 0;
     element to_return;
     while (curr) {
         if (index == position - 1) {
-            Node * temp = new Node();
-            temp = curr->next;
-            element to_return = temp->data;
+
+            Node * temp = curr->next;
+            to_return = temp->data;
+
             curr->next = curr->next->next;
-            if (is_pool_full()) {
-                delete temp;
-            }
-            else {
+
+            if (!is_pool_full()) {
                 temp->next = pool_head;
                 pool_head = temp;
             }
+
             break;
         }
         curr = curr->next;
         ++index;
     }
+
     deallocateNodes();
     return to_return;
-}
-
-template <typename element>
-//Returns the item at a specified position
-element cop3530::PSLL<element>::item_at(int position) {
-    if (position >= length()  || signed(position)  < 0)
-        throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-
-    Node * temp = head;
-    int index = 0;
-    while (temp) {
-        if (index == position) {
-            return temp->data;
-        }
-        temp = temp->next;
-        ++index;
-    }
 }
 
 template <typename element>
@@ -433,23 +422,15 @@ element cop3530::PSLL<element>::pop_back() {
             tail->next = nullptr;
         }
         else {
-            Node * tempNode = tail;
-            tempNode->next = pool_head;
-            pool_head = tempNode;
+            Node * temp_node = tail;
+            temp_node->next = pool_head;
+            pool_head = temp_node;
             tail = curr;
-            tail->next = NULL;
+            tail->next = nullptr;
         }
     }
     deallocateNodes();
     return temp;
-}
-
-template <typename element>
-//Returns the last element
-element cop3530::PSLL<element>::peek_back() {
-    if (is_empty())
-        throw std::runtime_error("The list is empty, cannot peek at back.\n ");
-    return tail->data;
 }
 
 template <typename element>
@@ -466,19 +447,46 @@ element cop3530::PSLL<element>::pop_front() {
     else
         head = nullptr;
 
-    if (is_pool_full())
-        delete temp;
-    else {
+    if (!is_pool_full()) {
         temp->next = pool_head;
         pool_head = temp;
     }
+    temp = nullptr;
+    delete temp;
+
     deallocateNodes();
     return frontItem;
 }
 
+
+template <typename element>
+//Returns the last element
+element & cop3530::PSLL<element>::peek_back() {
+    if (is_empty())
+        throw std::runtime_error("The list is empty, cannot peek at back.\n ");
+    return tail->data;
+}
+
+template <typename element>
+//Returns the item at a specified position
+element & cop3530::PSLL<element>::item_at(int position) {
+    if (position >= length()  || signed(position)  < 0)
+        throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
+
+    Node * temp = head;
+    int index = 0;
+    while (temp) {
+        if (index == position) {
+            return temp->data;
+        }
+        temp = temp->next;
+        ++index;
+    }
+}
+
 template <typename element>
 //Returns the first element
-element cop3530::PSLL<element>::peek_front() {
+element & cop3530::PSLL<element>::peek_front() {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot peek at front.\n ");
     return head->data;
@@ -596,13 +604,12 @@ element * cop3530::PSLL<element>::contents() {
 
 template <typename element>
 //See if the list contains a certain element with the matching type
-bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
+bool cop3530::PSLL<element>::contains (element object, bool (*equals_function) (const element&, const element&))  {
     if (is_empty())
         return false;
     Node * temp = head;
     while (temp) {
         if (equals_function(object, temp->data))
-      //  if (object == temp->data)
             return true;
         temp = temp->next;
     }
@@ -613,7 +620,6 @@ template <typename element>
 //Deallocates free Nodes that are not being used
 void cop3530::PSLL<element>::deallocateNodes() {
     if (length() >= 100 && (pool_length() > int((length() / 2) + 0.5))) {
-        std::cout << "Going in\n";
         //Calculating the new size of the pool; added 0.5 because casting truncates the value
         size_t new_size = int(((length()) / 2) + 0.5);
         size_t destroy_nodes = pool_length() - new_size;
@@ -621,6 +627,7 @@ void cop3530::PSLL<element>::deallocateNodes() {
         for (size_t i = 0; i < destroy_nodes; ++i) {
             temp = pool_head;
             pool_head = pool_head->next;
+            temp = nullptr;
             delete temp;
         }
     }

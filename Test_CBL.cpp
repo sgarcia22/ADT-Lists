@@ -12,6 +12,14 @@
 using Catch::EndsWith;
 using Catch::StartsWith;
 
+/*TODO Test
+ * Change functions return values to by reference (not remove, pop_front, nor pop_back)
+ * Copy, Move Constructors
+ * Undefined Behavior Errors
+ * String SDAL & CDAL -> Push front not working well
+ * Test String and Char with CBL
+ * */
+
 template <typename element>
 //For the Contains function
 bool equals(element a, element b) {
@@ -63,7 +71,7 @@ TEST_CASE( "CBL List Test Case" ) {
     cbl_list->remove(50);
 
     REQUIRE ( cbl_list->item_at(0) == 100 );
-    REQUIRE ( cbl_list->item_at(50) == 50 );
+    REQUIRE ( cbl_list->item_at(50) == 30 );
 
     cbl_list->replace(40, 9);
 
@@ -108,6 +116,7 @@ TEST_CASE( "CBL List Test Case" ) {
     int * list_contents = cbl_list->contents();
     for (int i = 0; i < 5; ++i)
         REQUIRE ( true_contents[i] == list_contents[i] );
+    delete [] list_contents;
 
     //Check Contains Function
     REQUIRE ( cbl_list->contains(5, &equals) );
@@ -124,6 +133,8 @@ TEST_CASE( "CBL List Test Case" ) {
     REQUIRE ( cbl_list->contains(1, &equals) );
     REQUIRE ( cbl_list->contains(100, &equals) );
     REQUIRE ( !(cbl_list->contains(101, &equals)) );
+
+    delete cbl_list;
 
 }
 
@@ -150,6 +161,7 @@ TEST_CASE( "CBL Iterator" ) {
     cbl_list_iter->pop_back();
     cbl_list_iter->pop_front();
 
+	delete [] temp_contents;
     temp_contents = cbl_list_iter->contents();
     index = 0;
 
@@ -169,6 +181,9 @@ TEST_CASE( "CBL Iterator" ) {
 
         ++index;
     }
+
+    delete [] temp_contents;
+    delete cbl_list_iter;
 
 }
 
@@ -200,6 +215,8 @@ TEST_CASE ( "SSLL Print" ) {
 
 	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
 
+	 delete ssll_list;
+
 }
 
 TEST_CASE ( "PSLL Print" ) {
@@ -229,6 +246,8 @@ TEST_CASE ( "PSLL Print" ) {
 	std::string in_file_3 = out_file_3.str();
 
 	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+
+	 delete psll_list;
 
 }
 
@@ -260,6 +279,8 @@ TEST_CASE ( "SDAL Print" ) {
 
 	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
 
+	 delete sdal_list;
+
 }
 
 TEST_CASE ( "CDAL Print" ) {
@@ -288,6 +309,143 @@ TEST_CASE ( "CDAL Print" ) {
     cdal_list->print(out_file_3);
 	std::string in_file_3 = out_file_3.str();
 
-	 REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+	REQUIRE_THAT ( in_file_3 , StartsWith("<99,98,97,96,95,94") );
+
+	delete cdal_list;
 
 }
+
+
+TEST_CASE( "CBL CHAR" ) {
+
+    cop3530::CBL<char> * cbl_list = new cop3530::CBL<char> ();
+
+	cbl_list->push_back ('a');
+	cbl_list->push_back ('b');
+	cbl_list->push_back ('c');
+	cbl_list->push_back ('d');
+	cbl_list->push_back ('e');
+	cbl_list->push_back ('f');
+	cbl_list->push_back ('g');
+	cbl_list->push_back ('h');
+	cbl_list->push_back ('i');
+	cbl_list->push_back ('j');
+
+	REQUIRE (cbl_list->item_at(0) == 'a');
+	REQUIRE (cbl_list->item_at(5) == 'f');
+	REQUIRE (cbl_list->length() == 10);
+
+	REQUIRE (cbl_list->remove(8) == 'i');
+	REQUIRE (cbl_list->item_at(8) == 'j');
+	try {
+		cbl_list->remove(9);
+	}
+	catch (std::runtime_error e) {}
+
+	cbl_list->push_front('z');
+	REQUIRE (cbl_list->peek_front() == 'z');
+
+	REQUIRE (!(cbl_list->contains('m', &equals)));
+	REQUIRE (cbl_list->contains('a', &equals));
+
+	char * temp_contents = cbl_list->contents();
+
+	REQUIRE (temp_contents[0] == 'z');
+	REQUIRE (temp_contents[0] == cbl_list->peek_front());
+	REQUIRE (temp_contents[5] == cbl_list->item_at(5));
+
+	delete [] temp_contents;
+    delete cbl_list;
+
+}
+
+TEST_CASE ( "CBL COPY" ) {
+
+    cop3530::CBL<int> * cbl_list = new cop3530::CBL<int> ();
+    cbl_list->push_back (1);
+	cbl_list->push_back (2);
+	cbl_list->push_back (3);
+	cbl_list->push_back (4);
+	cbl_list->push_back (5);
+
+    cop3530::CBL<int> * cbl_list_2 = cbl_list;
+
+    for (int i = 0; i < cbl_list->length(); ++i)
+        REQUIRE (cbl_list == cbl_list_2);
+
+    delete cbl_list_2;
+
+}
+
+TEST_CASE ( "SSLL COPY" ) {
+
+    cop3530::SSLL<int> * ssll_list = new cop3530::SSLL<int> ();
+    ssll_list->push_back (1);
+	ssll_list->push_back (2);
+	ssll_list->push_back (3);
+	ssll_list->push_back (4);
+	ssll_list->push_back (5);
+
+    cop3530::SSLL<int> * ssll_list_2 = ssll_list;
+
+    for (int i = 0; i < ssll_list->length(); ++i)
+        REQUIRE (ssll_list == ssll_list_2);
+
+    delete ssll_list_2;
+
+}
+
+TEST_CASE ( "PSLL COPY" ) {
+
+    cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> ();
+    psll_list->push_back (1);
+	psll_list->push_back (2);
+	psll_list->push_back (3);
+	psll_list->push_back (4);
+	psll_list->push_back (5);
+
+    cop3530::PSLL<int> * psll_list_2 = psll_list;
+
+    for (int i = 0; i < psll_list->length(); ++i)
+        REQUIRE (psll_list == psll_list_2);
+
+    delete psll_list_2;
+
+}
+
+TEST_CASE ( "SDAL COPY" ) {
+
+    cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> ();
+    sdal_list->push_back (1);
+	sdal_list->push_back (2);
+	sdal_list->push_back (3);
+	sdal_list->push_back (4);
+	sdal_list->push_back (5);
+
+    cop3530::SDAL<int> * sdal_list_2 = sdal_list;
+
+    for (int i = 0; i < sdal_list->length(); ++i)
+        REQUIRE (sdal_list == sdal_list_2);
+
+    delete sdal_list_2;
+
+}
+
+TEST_CASE ( "CDAL COPY" ) {
+
+    cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
+    cdal_list->push_back (1);
+	cdal_list->push_back (2);
+	cdal_list->push_back (3);
+	cdal_list->push_back (4);
+	cdal_list->push_back (5);
+
+    cop3530::CDAL<int> * cdal_list_2 = cdal_list;
+
+    for (int i = 0; i < cdal_list->length(); ++i)
+        REQUIRE (cdal_list == cdal_list_2);
+
+    delete cdal_list_2;
+
+}
+
