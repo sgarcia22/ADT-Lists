@@ -23,21 +23,18 @@ class CBL : public List<element>
         element remove (int position) override;
         element pop_back () override;
         element pop_front () override;
-        element item_at (int position) override;
-        element peek_back () override;
-        element peek_front () override;
+        element & item_at (int position) override;
+        element & peek_back () override;
+        element & peek_front () override;
         bool is_empty () override;
         bool is_full () override;
         bool is_curr_full ();
         size_t length () override;
         void clear () override;
-        bool contains (element object, bool (*equals_function) (element, element)) override;
+        bool contains (element object, bool (*equals_function) (const element&, const element&)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         void allocate_new();
-
-        void shitPrint();
-
 
     private:
 
@@ -272,7 +269,12 @@ template <typename element>
 void cop3530::CBL<element>::replace (element object, int position) {
     if (position >= max_size || signed(position)  < 0 || position >= length())
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
-    list[(position + head) % max_size] = object;
+    if (position + head > max_size) {
+        size_t temp = position + head - 1 - max_size;
+        list[temp] = object;
+    }
+    else
+        list[position + head] = object;
 }
 
 template <typename element>
@@ -292,7 +294,7 @@ element cop3530::CBL<element>::remove (int position) {
         element to_return = pop_back();
         return to_return;
     }
-    int temp_head = (position + head - 1) % max_size;
+    int temp_head = (position + head) % max_size;
     element to_return = list[temp_head];
     for (int i = position; i < length(); ++i, ++temp_head) {
         if (temp_head >= max_size)
@@ -335,23 +337,24 @@ element cop3530::CBL<element>::pop_front () {
 
 template <typename element>
 //Returns the item at the specified index
-element cop3530::CBL<element>::item_at (int position) {
-    if (position >= length() || position  < 0)
+element & cop3530::CBL<element>::item_at (int position) {
+    if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (!position)
         return peek_front();
     if (position == length() - 1)
         return peek_back();
-
-    element * temp_list = contents();
-    element at_pos = temp_list[position];
-    delete temp_list;
-    return at_pos;
+    if ((head + position) > max_size) {
+        return list[(head + position) - max_size - 1];
+    }
+    else {
+        return list[head + position];
+    }
 }
 
 template <typename element>
 //Returns the element at the back of the list
-element cop3530::CBL<element>::peek_back () {
+element & cop3530::CBL<element>::peek_back () {
     size_t temp_tail = tail;
     if (!temp_tail)
         temp_tail = max_size;
@@ -362,7 +365,7 @@ element cop3530::CBL<element>::peek_back () {
 
 template <typename element>
 //Returns the element at the front of the list
-element cop3530::CBL<element>::peek_front () {
+element & cop3530::CBL<element>::peek_front () {
     return list[head];
 }
 
@@ -411,14 +414,14 @@ void cop3530::CBL<element>::clear () {
 
 template <typename element>
 //Returns whether the list contains the specified value
-bool cop3530::CBL<element>::contains (element object, bool (*equals_function) (element, element)) {
+bool cop3530::CBL<element>::contains (element object, bool (*equals_function) (const element&, const element&)) {
     if (is_empty())
         return false;
     size_t temp_index = head;
     for (int i = 0; i < length(); ++i) {
         if (equals_function(object, list[temp_index]))
             return true;
-        if (temp_index == max_size - 1)
+        if (temp_index == max_size)
             temp_index = 0;
         else
             ++temp_index;
@@ -463,14 +466,6 @@ element * cop3530::CBL<element>::contents() {
     }
     return values;
 }
-
-template <typename element>
-//Returns the contents of the list
-void cop3530::CBL<element>::shitPrint() {
-    std::cout << "\n HEAD: " << head << " TAIL: " << tail << "\n";
-    std::cout << "\n HEAD ITEM: " << list[head] << " TAIL ITEM " << list[tail - 1] << "\n";
-}
-
 
 template <typename element>
 //Allocate a new array is the current one is using too much or too little memory

@@ -51,11 +51,11 @@ bool test_int_passed(cop3530::List<element> * test_case_1) {
 	test_case_1->insert(79, 0);
 	if (test_case_1->length() != 102) return false;
 
-	if (test_case_1->item_at(51) != 30) return false; ///ERROR
+	if (test_case_1->item_at(51) != 30) return false;
 	if (test_case_1->item_at(101) != 1) return false;
 
 	//Remove inserted elements
-	test_case_1->remove(0);
+	if (test_case_1->remove(0) != 79) return false;
 	test_case_1->remove(50);
 	if (test_case_1->item_at(0) != 100) return false;
 	if (test_case_1->item_at(50) != 50) return false;
@@ -68,13 +68,11 @@ bool test_int_passed(cop3530::List<element> * test_case_1) {
     if (test_case_1->peek_back() != 2) return false;
     if (test_case_1->length() != 99) return false;
 
-
     if (test_case_1->peek_front() != 100) return false;
     test_case_1->pop_front();
 
     if (test_case_1->item_at(0) != 99) return false;
     if (test_case_1->length() != 98) return false;
-
 
     test_case_1->remove(8);
     if (test_case_1->length() != 97) return false;
@@ -88,9 +86,9 @@ bool test_int_passed(cop3530::List<element> * test_case_1) {
     //Checking contents Function
     element true_contents [5] = {1, 2, 3, 4, 5};
     element * list_contents = test_case_1->contents();
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
         if (true_contents[i] != list_contents[i]) return false;
-    }
+    delete [] list_contents;
     //Print function file matches contents
 
     //Check contains functions
@@ -108,7 +106,50 @@ bool test_int_passed(cop3530::List<element> * test_case_1) {
     if (!test_case_1->contains(100, &equals)) return false;
     if (test_case_1->contains(101, &equals)) return false;
 
+
     return true;
+}
+
+template <typename element>
+
+bool test_char_passed(cop3530::List<element> * test_case_2) {
+
+	test_case_2->push_back ('a');
+	test_case_2->push_back ('b');
+	test_case_2->push_back ('c');
+	test_case_2->push_back ('d');
+	test_case_2->push_back ('e');
+	test_case_2->push_back ('f');
+	test_case_2->push_back ('g');
+	test_case_2->push_back ('h');
+	test_case_2->push_back ('i');
+	test_case_2->push_back ('j');
+
+	if (test_case_2->item_at(0) != 'a') return false;
+	if (test_case_2->item_at(5) != 'f') return false;
+	if (test_case_2->length() != 10) return false;
+
+	if (test_case_2->remove(8) != 'i') return false;
+	if (test_case_2->item_at(8) != 'j') return false;
+	try {
+		test_case_2->remove(9);
+	}
+	catch (std::runtime_error e) {}
+
+	test_case_2->push_front('z');
+	if (test_case_2->peek_front() != 'z') return false;
+
+	if (test_case_2->contains('m', &equals)) return false;
+	if (!test_case_2->contains('a', &equals)) return false;
+
+	element * temp_contents = test_case_2->contents();
+
+	if (temp_contents[0] != 'z' || temp_contents[0] != test_case_2->peek_front()) return false;
+	if (temp_contents[5] != test_case_2->item_at(5)) return false;
+
+	delete [] temp_contents;
+
+	return true;
 }
 
 bool test_ssll_iterator () {
@@ -130,6 +171,8 @@ bool test_ssll_iterator () {
     ssll_list->pop_back();
     ssll_list->pop_front();
 
+	delete [] temp_contents;
+
     temp_contents = ssll_list->contents();
     index = 0;
 
@@ -146,8 +189,10 @@ bool test_ssll_iterator () {
         ++index;
     }
 
-    return true;
+    delete [] temp_contents;
+	delete ssll_list;
 
+    return true;
 }
 
 bool test_psll_iterator () {
@@ -169,6 +214,7 @@ bool test_psll_iterator () {
     psll_list->pop_back();
     psll_list->pop_front();
 
+	delete [] temp_contents;
     temp_contents = psll_list->contents();
     index = 0;
 
@@ -185,8 +231,10 @@ bool test_psll_iterator () {
         ++index;
     }
 
-    return true;
+    delete [] temp_contents;
+	delete psll_list;
 
+    return true;
 }
 
 bool test_sdal_iterator () {
@@ -208,6 +256,7 @@ bool test_sdal_iterator () {
     sdal_list->pop_back();
     sdal_list->pop_front();
 
+	delete [] temp_contents;
     temp_contents = sdal_list->contents();
     index = 0;
 
@@ -224,8 +273,10 @@ bool test_sdal_iterator () {
         ++index;
     }
 
-    return true;
+    delete [] temp_contents;
+	delete sdal_list;
 
+    return true;
 }
 
 bool test_cdal_iterator () {
@@ -255,6 +306,10 @@ bool test_cdal_iterator () {
         if (temp_contents[index] != *it) return false;
         ++index;
     }
+
+    delete [] temp_contents;
+    delete cdal_list;
+
     return true;
 }
 
@@ -266,7 +321,6 @@ int main () {
     cop3530::PSLL<int> * psll_list = new cop3530::PSLL<int> ();
     cop3530::SDAL<int> * sdal_list = new cop3530::SDAL<int> (100);
     cop3530::CDAL<int> * cdal_list = new cop3530::CDAL<int> ();
-    cop3530::CBL<int> * cbl_list = new cop3530::CBL<int> ();
 
     std::cout << "--------------- TEST CASES ---------------\n";
     std::cout << "\t     --- INT LIST ---\n";
@@ -295,10 +349,36 @@ int main () {
         std::cout << "CDAL TEST CASE: FAILED\n" ;
         all_passed = false;
     }
-    if (test_int_passed(cbl_list))
-        std::cout << "CBL TEST CASE: PASSED\n";
+
+    cop3530::SSLL<char> * ssll_list_char = new cop3530::SSLL<char> ();
+    cop3530::PSLL<char> * psll_list_char = new cop3530::PSLL<char> ();
+    cop3530::SDAL<char> * sdal_list_char = new cop3530::SDAL<char> ();
+    cop3530::CDAL<char> * cdal_list_char = new cop3530::CDAL<char> ();
+
+    std::cout << "\n\t    --- CHAR LIST ---\n";
+
+    if (test_char_passed(ssll_list_char))
+        std::cout << "SSLL TEST CASE: PASSED\n";
     else {
-        std::cout << "CBL TEST CASE: FAILED\n" ;
+        std::cout << "SSLL TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_char_passed(psll_list_char))
+        std::cout << "PSLL TEST CASE: PASSED\n";
+    else {
+        std::cout << "PSLL TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_char_passed(sdal_list_char))
+        std::cout << "SDAL TEST CASE: PASSED\n";
+    else {
+        std::cout << "SDAL TEST CASE: FAILED\n" ;
+        all_passed = false;
+    }
+    if (test_char_passed(cdal_list_char))
+        std::cout << "CDAL TEST CASE: PASSED\n";
+    else {
+        std::cout << "CDAL TEST CASE: FAILED\n" ;
         all_passed = false;
     }
 
@@ -330,6 +410,17 @@ int main () {
     }
 
     std::cout << (all_passed ? "\nALL TEST CASES PASSED\n" : "\nAT LEAST ONE TEST CASE FAILED\n");
+
+
+	delete ssll_list;
+	delete psll_list;
+	delete sdal_list;
+	delete cdal_list;
+
+	delete ssll_list_char;
+	delete psll_list_char;
+	delete sdal_list_char;
+	delete cdal_list_char;
 
     return 0;
 }

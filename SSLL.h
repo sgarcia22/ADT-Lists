@@ -36,14 +36,14 @@ class SSLL : public List<element>
         element remove (int position) override;
         element pop_back () override;
         element pop_front () override;
-        element item_at (int position) override;
-        element peek_back () override;
-        element peek_front () override;
+        element & item_at (int position) override;
+        element & peek_back () override;
+        element & peek_front () override;
         bool is_empty () override;
         bool is_full () override;
         size_t length () override;
         void clear () override;
-        bool contains (element object, bool (*equals_function) (element, element)) override;
+        bool contains (element object, bool (*equals_function) (const element&, const element&)) override;
         std::ostream& print (std::ostream& out) override;
         element * contents() override;
         bool equals (element a, element b);
@@ -212,16 +212,18 @@ void cop3530::SSLL<element>::push_front(element object) {
         if (is_empty()) {
             head = new Node();
             head->data = object;
-            head->next = NULL;
+            head->next = tail;
             tail = head;
+            tail->next = nullptr;
         }
         else {
             Node * temp = new Node();
             temp->data = object;
             temp->next = head;
             head = temp;
+            temp = nullptr;
+            delete temp;
         }
-
     }
     else
         throw std::runtime_error("The List is full, cannot push to the front.\n ");
@@ -234,7 +236,7 @@ void cop3530::SSLL<element>::push_back(element object) {
     if (!is_full()) {
         Node * curr = new Node();
         curr->data = object;
-        curr->next = NULL;
+        curr->next = nullptr;
         //If there is no current head pointer
         if (!head) {
             //Since there are no more elements the head and tail pointers equal the same thing
@@ -246,6 +248,8 @@ void cop3530::SSLL<element>::push_back(element object) {
             tail->next = curr;
             tail = tail->next;
         }
+        curr = nullptr;
+        delete curr;
     }
     else
         throw std::runtime_error("The List is full, cannot push back.\n ");
@@ -265,7 +269,7 @@ void cop3530::SSLL<element>::insert(element object, int position) {
         push_front(object);
         return;
     }
-    if (position == length() - 1) {
+    if (position == length()) {
         push_back(object);
         return;
     }
@@ -274,15 +278,17 @@ void cop3530::SSLL<element>::insert(element object, int position) {
     int index = 0;
     while (temp) {
         if (index + 1 == position) {
-            Node * insertedNode = new Node();
-            insertedNode->data = object;
-            insertedNode->next = temp->next;
-            temp->next = insertedNode;
+            Node * inserted_node = new Node();
+            inserted_node->data = object;
+            inserted_node->next = temp->next;
+            temp->next = inserted_node;
             break;
         }
         temp = temp->next;
         ++index;
     }
+    temp = nullptr;
+    delete temp;
 }
 
 template <typename element>
@@ -312,7 +318,7 @@ element cop3530::SSLL<element>::remove(int position) {
     if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
     if (position == 0) {
-        element to_return = pop_front(); ///Getting an error
+        element to_return = pop_front();
         return to_return;
     }
     if (position == length() - 1) {
@@ -325,7 +331,10 @@ element cop3530::SSLL<element>::remove(int position) {
     while (temp) {
         if (index == position - 1) {
 			to_return = temp->next->data;
+			Node * to_destroy = temp->next;
             temp->next = temp->next->next;
+            //Make sure to delete the node
+            delete to_destroy;
             break;
         }
         temp = temp->next;
@@ -336,7 +345,7 @@ element cop3530::SSLL<element>::remove(int position) {
 
 template <typename element>
 //Returns the item at a specified position
-element cop3530::SSLL<element>::item_at(int position) {
+element & cop3530::SSLL<element>::item_at(int position) {
     if (position >= length() || signed(position)  < 0)
         throw std::runtime_error("Invalid Index; no element at the specified position.\n ");
 
@@ -361,20 +370,22 @@ element cop3530::SSLL<element>::pop_back() {
     if (head == tail)
         clear();
     else {
-        Node * curr = new Node();
-        curr = head;
+        Node * curr = head;
         while (curr->next != tail) {
             curr = curr->next;
         }
         tail = curr;
-        tail->next = NULL;
+        Node * to_destroy = tail->next;
+        tail->next = nullptr;
+
+        delete to_destroy;
     }
     return temp;
 }
 
 template <typename element>
 //Returns the last element
-element cop3530::SSLL<element>::peek_back() {
+element & cop3530::SSLL<element>::peek_back() {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot peek at back.\n ");
     return tail->data;
@@ -390,14 +401,16 @@ element cop3530::SSLL<element>::pop_front() {
         clear();
         return frontItem;
     }
-    head = head->next;
+    Node * temp = head;
+    head = temp->next;
+	delete temp;
 
     return frontItem;
 }
 
 template <typename element>
 //Returns the first element
-element cop3530::SSLL<element>::peek_front() {
+element & cop3530::SSLL<element>::peek_front() {
     if (is_empty())
         throw std::runtime_error("The list is empty, cannot peek at front.\n ");
     return head->data;
@@ -484,7 +497,7 @@ element * cop3530::SSLL<element>::contents() {
 
 template <typename element>
 //See if the list contains a certain element through a function pointer to make sure it is the exact element
-bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (element, element))  {
+bool cop3530::SSLL<element>::contains (element object, bool (*equals_function) (const element&, const element&))  {
     if (is_empty())
         return false;
 
