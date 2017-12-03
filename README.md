@@ -14,8 +14,3 @@ All derive from pure virtual class ADT.h and use templates
 
 Test Cases:
 First four tested with normal cpp, fifth tested with Catch (catch.hpp-> not my code)
-
-TODO::
-*Check Deep Copy Constructors
-*Valgrind
-*Test Strings
