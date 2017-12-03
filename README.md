@@ -10,7 +10,7 @@ COP3530 Project1
 4. Chained Dynamic Array-based List (CDAL)
 5. Circular Buffer List (CBL)
 
-All derive from pure virtual class ADT.h and use templates
+All derive from pure virtual class List.h and use templates
 
 Test Cases:
 First four tested with normal cpp, fifth tested with Catch (catch.hpp-> not my code)
